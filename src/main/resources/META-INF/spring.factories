@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.wj.auth.core.AuthRunner,com.wj.auth.core.WebConfigurer
