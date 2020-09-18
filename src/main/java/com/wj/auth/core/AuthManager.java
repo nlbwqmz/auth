@@ -1,54 +1,63 @@
 package com.wj.auth.core;
 
+import com.wj.auth.common.RequestVerification;
 import com.wj.auth.exception.CertificateNotFoundException;
 import com.wj.auth.exception.PermissionNotFoundException;
+import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.JacksonUtils;
-import com.wj.auth.utils.TokenFactory;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
 /**
  * @Author: weijie
  * @Date: 2020/9/10
  */
 public abstract class AuthManager {
-
-  private Map<RequestMappingInfo, String> authMap = new HashMap<>();
-  private Set<RequestMappingInfo> freeLoginSet = new HashSet<>();
+  private Set<String> anonymousPatterns = new HashSet<>();
+  private Set<RequestVerification> freeLoginSet = new HashSet<>();
+  private Set<RequestVerification> requestVerificationSet = new HashSet<>();
   private AntPathMatcher antPathMatcher = new AntPathMatcher();
+
   @Value("${auth.header:Authorization}")
   private String header;
+  @Value("${auth.anonymous-patterns}")
+  private Set<String> anonymousPatternsProperties;
   @Autowired
   private TokenFactory tokenFactory;
+  @Value("${server.servlet.context-path}")
+  private String contextPath;
 
+  @PostConstruct
+  private void init(){
+    setAnonymousPatterns();
+  }
   /**
    * 权限验证
    *
    * @param request
    */
-  public void authorityVerification(HttpServletRequest request) {
+  public void authorityVerification(HttpServletRequest request){
     Set<String> userAuthSet = doAuthorization();
     String uri = request.getRequestURI();
     String method = request.getMethod();
-    for (RequestMappingInfo requestMappingInfo : authMap.keySet()) {
-      Set<String> patterns = requestMappingInfo.getPatternsCondition().getPatterns();
-      Set<RequestMethod> requestMethods = requestMappingInfo.getMethodsCondition().getMethods();
-      if (checkPatterns(uri, patterns) && checkRequestMethod(method, requestMethods)) {
-        if (userAuthSet == null || userAuthSet.isEmpty() || !userAuthSet
-            .contains(authMap.get(requestMappingInfo))) {
-          throw new PermissionNotFoundException("没有权限：" + authMap.get(requestMappingInfo));
+    Iterator<RequestVerification> iterator = requestVerificationSet.iterator();
+    while (iterator.hasNext()){
+      RequestVerification next = iterator.next();
+      Set<String> patterns = next.getPatterns();
+      Set<String> methods = next.getMethods();
+      String auth = next.getAuth();
+      if (checkPatterns(uri, patterns) && checkRequestMethod(method, methods)) {
+          if(CollectionUtils.isBlank(userAuthSet) || !userAuthSet.contains(auth)){
+            throw new PermissionNotFoundException("Not Found Permission:" + auth);
+          }
         }
-      }
     }
   }
 
@@ -75,6 +84,15 @@ public abstract class AuthManager {
     return true;
   }
 
+  public boolean isAnonymous(HttpServletRequest request){
+    for(String pattern:anonymousPatterns){
+      if(antPathMatcher.match(pattern,request.getRequestURI())){
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * 是否为免登录接口
    *
@@ -84,12 +102,12 @@ public abstract class AuthManager {
   private boolean isFreeLogin(HttpServletRequest request) {
     String uri = request.getRequestURI();
     String method = request.getMethod();
-    Iterator<RequestMappingInfo> iterator = freeLoginSet.iterator();
+    Iterator<RequestVerification> iterator = freeLoginSet.iterator();
     while (iterator.hasNext()) {
-      RequestMappingInfo requestMappingInfo = iterator.next();
-      Set<String> patterns = requestMappingInfo.getPatternsCondition().getPatterns();
-      Set<RequestMethod> requestMethods = requestMappingInfo.getMethodsCondition().getMethods();
-      if (checkPatterns(uri, patterns) && checkRequestMethod(method, requestMethods)) {
+      RequestVerification requestVerification = iterator.next();
+      Set<String> patterns = requestVerification.getPatterns();
+      Set<String> methods = requestVerification.getMethods();
+      if (checkPatterns(uri, patterns) && checkRequestMethod(method, methods)) {
         return true;
       }
     }
@@ -100,18 +118,12 @@ public abstract class AuthManager {
    * 验证请求方法
    *
    * @param method
-   * @param requestMethods
+   * @param methods
    * @return
    */
-  private boolean checkRequestMethod(String method, Set<RequestMethod> requestMethods) {
-    if (isBlankSet(requestMethods)) {
+  private boolean checkRequestMethod(String method, Set<String> methods) {
+    if (CollectionUtils.isBlank(methods) || methods.contains(method)) {
       return true;
-    }
-    Iterator<RequestMethod> iterator = requestMethods.iterator();
-    while (iterator.hasNext()) {
-      if (iterator.next().name().equals(method)) {
-        return true;
-      }
     }
     return false;
   }
@@ -141,30 +153,12 @@ public abstract class AuthManager {
   public abstract Set<String> doAuthorization();
 
   /**
-   * 设置url权限
-   * @param authMap
-   */
-  public void setAuthMap(
-      Map<RequestMappingInfo, String> authMap) {
-    this.authMap = authMap;
-  }
-
-  /**
    * 设置免登录url
    * @param freeLoginSet
    */
   public void setFreeLoginSet(
-      Set<RequestMappingInfo> freeLoginSet) {
+      Set<RequestVerification> freeLoginSet) {
     this.freeLoginSet = freeLoginSet;
-  }
-
-  /**
-   * set是否为空
-   * @param set
-   * @return
-   */
-  public boolean isBlankSet(Set set) {
-    return set == null || set.isEmpty();
   }
 
   /**
@@ -176,5 +170,24 @@ public abstract class AuthManager {
     HttpServletResponse response = SubjectManager.getResponse();
     response.setHeader(header, tokenFactory.create(JacksonUtils.toJSONString(obj), expire));
     response.setHeader("Access-Control-Expose-Headers", header);
+  }
+
+  public void setRequestVerificationSet(
+      Set<RequestVerification> requestVerificationSet) {
+    this.requestVerificationSet = requestVerificationSet;
+  }
+
+  private void setAnonymousPatterns() {
+    if(CollectionUtils.isNotBlank(anonymousPatternsProperties)){
+      anonymousPatterns.addAll(CollectionUtils.addUrlPrefix(anonymousPatternsProperties,contextPath));
+    }
+    Set<String> set = addAnonymousPatterns();
+    if(CollectionUtils.isNotBlank(set)){
+      anonymousPatterns.addAll(CollectionUtils.addUrlPrefix(set,contextPath));
+    }
+  }
+
+  public Set<String> addAnonymousPatterns(){
+    return null;
   }
 }

@@ -1,4 +1,4 @@
-package com.wj.auth.utils;
+package com.wj.auth.core;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
@@ -7,8 +7,8 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.wj.auth.common.AlgorithmEnum;
-import com.wj.auth.core.SubjectManager;
 import com.wj.auth.exception.TokenFactoryInitException;
+import com.wj.auth.utils.JacksonUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.KeyPair;
@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import javax.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.util.ResourceUtils;
 
 /**

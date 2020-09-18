@@ -2,29 +2,22 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <!--<parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
-    <relativePath />
-  </parent>-->
 
-  <artifactId>auth</artifactId>
-  <version>1.0</version>
+  <!--<artifactId>auth</artifactId>
+  <version>1.0-test</version>
   <description>安全框架</description>
   <groupId>com.github.nlbwqmz</groupId>
   <name>auth</name>
   <url>https://github.com/nlbwqmz/auth.git</url>
+  <modelVersion>4.0.0</modelVersion>-->
+  <artifactId>auth</artifactId>
+  <version>1.0</version>
+  <description>安全框架</description>
+  <groupId>com.wj</groupId>
+  <name>auth</name>
+  <url>https://github.com/nlbwqmz/auth.git</url>
   <modelVersion>4.0.0</modelVersion>
 
-
-
-  <!--<parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.1.16.RELEASE</version>
-    <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;
-  </parent>-->
   <dependencies>
     <dependency>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -68,7 +61,6 @@
     </license>
   </licenses>
 
-
   <build>
     <plugins>
       <plugin>
@@ -88,7 +80,6 @@
     <profile>
       <build>
         <plugins>
-
           <!-- Source -->
           <plugin>
             <artifactId>maven-source-plugin</artifactId>
@@ -160,6 +151,5 @@
     <developerConnection>scm:git:git@github.com:nlbwqmz/auth.git</developerConnection>
     <url>git@github.com:nlbwqmz/auth.git</url>
   </scm>
-
 
 </project>

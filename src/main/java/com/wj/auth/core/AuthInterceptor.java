@@ -21,6 +21,9 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
       Object handler) {
     SubjectManager.setRequest(request);
     SubjectManager.setResponse(response);
+    if(authManager.isAnonymous(request)){
+      return true;
+    }
     if (authManager.authorizationVerification(request)) {
       authManager.authorityVerification(request);
     }

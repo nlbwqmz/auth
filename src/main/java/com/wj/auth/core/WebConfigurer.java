@@ -1,6 +1,5 @@
 package com.wj.auth.core;
 
-import com.wj.auth.utils.TokenFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.Ordered;
@@ -11,8 +10,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @Author: weijie
  * @Date: 2020/9/10
  */
-@ConditionalOnBean(AuthManager.class)
 @EnableConfigurationProperties(TokenFactory.class)
+@ConditionalOnBean(AuthManager.class)
 public class WebConfigurer implements WebMvcConfigurer {
 
   private final AuthManager authManager;
