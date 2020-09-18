@@ -1,5 +1,6 @@
 package com.wj.auth.common;
 
+import com.wj.auth.core.AuthHandler;
 import java.util.Set;
 
 /**
@@ -13,6 +14,10 @@ public class RequestVerification {
   private String auth;
 
   public RequestVerification() {
+  }
+
+  public RequestVerification(Set<String> patterns) {
+    this.patterns = patterns;
   }
 
   public RequestVerification(Set<String> patterns, Set<String> methods) {

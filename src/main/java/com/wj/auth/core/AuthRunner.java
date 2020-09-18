@@ -2,6 +2,7 @@ package com.wj.auth.core;
 
 import com.wj.auth.annotation.Auth;
 import com.wj.auth.annotation.FreeLogin;
+import com.wj.auth.common.AuthHandlerEntity;
 import com.wj.auth.common.RequestVerification;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.StringUtils;
@@ -58,11 +59,13 @@ public class AuthRunner implements ApplicationRunner {
       }
       if (auth != null) {
         requestVerificationSet.add(new RequestVerification(patternResult, methodResult,auth.value()));
-      } else if (freeLogin != null) {
+      }
+      if (freeLogin != null) {
         freeLoginSet.add(new RequestVerification(patternResult,methodResult));
       }
     });
-    authManager.setRequestVerificationSet(requestVerificationSet);
-    authManager.setFreeLoginSet(freeLoginSet);
+    authManager.addHandler(new AuthHandlerEntity(requestVerificationSet,new DefaultAuthHandler(),0));
+    authManager.setAnon(freeLoginSet);
+//    authManager.addHandler(new AuthHandlerEntity(freeLoginSet,new FreeLoginAuthHandler(),1));
   }
 }

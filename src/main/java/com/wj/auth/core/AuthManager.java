@@ -1,12 +1,15 @@
 package com.wj.auth.core;
 
+import com.wj.auth.common.AuthHandlerEntity;
 import com.wj.auth.common.RequestVerification;
 import com.wj.auth.exception.CertificateNotFoundException;
-import com.wj.auth.exception.PermissionNotFoundException;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.JacksonUtils;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +23,7 @@ import org.springframework.util.AntPathMatcher;
  * @Date: 2020/9/10
  */
 public abstract class AuthManager {
+  private List<AuthHandlerEntity> handlers = new ArrayList<>();
   private Set<String> anonymousPatterns = new HashSet<>();
   private Set<RequestVerification> freeLoginSet = new HashSet<>();
   private Set<RequestVerification> requestVerificationSet = new HashSet<>();
@@ -27,24 +31,32 @@ public abstract class AuthManager {
 
   @Value("${auth.header:Authorization}")
   private String header;
-  @Value("${auth.anonymous-patterns}")
-  private Set<String> anonymousPatternsProperties;
+  @Value("${auth.anon}")
+  private Set<String> anon;
   @Autowired
   private TokenFactory tokenFactory;
   @Value("${server.servlet.context-path}")
   private String contextPath;
 
-  @PostConstruct
-  private void init(){
-    setAnonymousPatterns();
+  public boolean doHandler(HttpServletRequest request,HttpServletResponse response){
+    AuthHandler handler = getAuthHandler(request, response);
+    boolean authenticate = handler.authorityVerification(request, response);
+    boolean authorize = handler.authorizationVerification(request, response);
+    return false;
+  }
+
+  public AuthHandler getAuthHandler(HttpServletRequest request,HttpServletResponse response){
+    return null;
   }
   /**
    * 权限验证
    *
    * @param request
    */
-  public void authorityVerification(HttpServletRequest request){
-    Set<String> userAuthSet = doAuthorization();
+  public boolean authorityVerification(HttpServletRequest request,HttpServletResponse response){
+
+    return false;
+    /*Set<String> userAuthSet = doAuthorization();
     String uri = request.getRequestURI();
     String method = request.getMethod();
     Iterator<RequestVerification> iterator = requestVerificationSet.iterator();
@@ -58,7 +70,7 @@ public abstract class AuthManager {
             throw new PermissionNotFoundException("Not Found Permission:" + auth);
           }
         }
-    }
+    }*/
   }
 
   /**
@@ -67,7 +79,7 @@ public abstract class AuthManager {
    * @param request
    * @return
    */
-  public boolean authorizationVerification(HttpServletRequest request) {
+  public boolean authorizationVerification(HttpServletRequest request,HttpServletResponse response) {
     if (isFreeLogin(request)) {
       return true;
     } else {
@@ -177,17 +189,23 @@ public abstract class AuthManager {
     this.requestVerificationSet = requestVerificationSet;
   }
 
-  private void setAnonymousPatterns() {
-    if(CollectionUtils.isNotBlank(anonymousPatternsProperties)){
-      anonymousPatterns.addAll(CollectionUtils.addUrlPrefix(anonymousPatternsProperties,contextPath));
+  public void setAnon(Set<RequestVerification> anonSet) {
+    if(CollectionUtils.isNotBlank(anon)){
+      anonSet.add(new RequestVerification(CollectionUtils.addUrlPrefix(anon,contextPath)));
     }
     Set<String> set = addAnonymousPatterns();
     if(CollectionUtils.isNotBlank(set)){
-      anonymousPatterns.addAll(CollectionUtils.addUrlPrefix(set,contextPath));
+      anonSet.add(new RequestVerification(CollectionUtils.addUrlPrefix(set,contextPath)));
     }
+    addHandler(new AuthHandlerEntity(anonSet,new FreeLoginAuthHandler(),1));
   }
 
   public Set<String> addAnonymousPatterns(){
     return null;
+  }
+
+  public void addHandler(AuthHandlerEntity authHandlerEntity){
+    this.handlers.add(authHandlerEntity);
+    this.handlers.sort(Comparator.comparingInt(AuthHandlerEntity::getOrder));
   }
 }
