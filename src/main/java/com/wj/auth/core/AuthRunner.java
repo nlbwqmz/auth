@@ -1,9 +1,10 @@
 package com.wj.auth.core;
 
 import com.wj.auth.annotation.Auth;
-import com.wj.auth.annotation.FreeLogin;
+import com.wj.auth.annotation.Anon;
 import com.wj.auth.common.AuthHandlerEntity;
 import com.wj.auth.common.RequestVerification;
+import com.wj.auth.handler.DefaultAuthHandler;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.StringUtils;
 import java.lang.reflect.Method;
@@ -44,9 +45,8 @@ public class AuthRunner implements ApplicationRunner {
     map.forEach((requestMappingInfo, handlerMethod) -> {
       //获取url的Set集合，一个方法可能对应多个url
       Method method = handlerMethod.getMethod();
-      Class<?> declaringClass = method.getDeclaringClass();
       Auth auth = method.getAnnotation(Auth.class);
-      FreeLogin freeLogin = method.getAnnotation(FreeLogin.class);
+      Anon anon = method.getAnnotation(Anon.class);
       Set<RequestMethod> methods = requestMappingInfo.getMethodsCondition().getMethods();
       Set<String> methodResult = new HashSet<>();
       Set<String> patternResult = new HashSet<>();
@@ -60,12 +60,11 @@ public class AuthRunner implements ApplicationRunner {
       if (auth != null) {
         requestVerificationSet.add(new RequestVerification(patternResult, methodResult,auth.value()));
       }
-      if (freeLogin != null) {
+      if (anon != null) {
         freeLoginSet.add(new RequestVerification(patternResult,methodResult));
       }
     });
     authManager.addHandler(new AuthHandlerEntity(requestVerificationSet,new DefaultAuthHandler(),0));
     authManager.setAnon(freeLoginSet);
-//    authManager.addHandler(new AuthHandlerEntity(freeLoginSet,new FreeLoginAuthHandler(),1));
   }
 }

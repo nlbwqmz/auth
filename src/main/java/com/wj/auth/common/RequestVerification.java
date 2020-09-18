@@ -1,6 +1,5 @@
 package com.wj.auth.common;
 
-import com.wj.auth.core.AuthHandler;
 import java.util.Set;
 
 /**

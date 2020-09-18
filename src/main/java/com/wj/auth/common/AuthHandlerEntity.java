@@ -1,6 +1,6 @@
 package com.wj.auth.common;
 
-import com.wj.auth.core.AuthHandler;
+import com.wj.auth.handler.AuthHandler;
 import java.util.Set;
 
 /**
@@ -9,16 +9,16 @@ import java.util.Set;
  */
 public class AuthHandlerEntity {
   private Set<RequestVerification> requestVerifications;
-  private AuthHandler authHandler;
+  private AuthHandler handler;
   private int order;
 
   public AuthHandlerEntity() {
   }
 
   public AuthHandlerEntity(Set<RequestVerification> requestVerifications,
-      AuthHandler authHandler, int order) {
+      AuthHandler handler, int order) {
     this.requestVerifications = requestVerifications;
-    this.authHandler = authHandler;
+    this.handler = handler;
     this.order = order;
   }
 
@@ -32,12 +32,12 @@ public class AuthHandlerEntity {
     return this;
   }
 
-  public AuthHandler getAuthHandler() {
-    return authHandler;
+  public AuthHandler getHandler() {
+    return handler;
   }
 
-  public AuthHandlerEntity setAuthHandler(AuthHandler authHandler) {
-    this.authHandler = authHandler;
+  public AuthHandlerEntity setHandler(AuthHandler handler) {
+    this.handler = handler;
     return this;
   }
 
