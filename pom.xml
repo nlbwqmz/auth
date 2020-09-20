@@ -29,7 +29,7 @@
       <artifactId>spring-boot-configuration-processor</artifactId>
       <groupId>org.springframework.boot</groupId>
       <optional>true</optional>
-      <scope>compile</scope>
+      <scope>provided</scope>
       <version>2.1.16.RELEASE</version>
     </dependency>
     <dependency>
@@ -42,11 +42,11 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <version>2.11.2</version>
     </dependency>
-    <dependency>
+    <!--<dependency>
       <artifactId>jackson-core</artifactId>
       <groupId>com.fasterxml.jackson.core</groupId>
       <version>2.11.2</version>
-    </dependency>
+    </dependency>-->
   </dependencies>
   <developers>
     <developer>

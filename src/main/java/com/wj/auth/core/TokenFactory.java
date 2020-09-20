@@ -23,9 +23,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.annotation.PostConstruct;
-import javax.security.auth.login.CredentialNotFoundException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.util.ResourceUtils;
 
 /**
@@ -62,7 +60,7 @@ public class TokenFactory {
   /**
    * 密码
    */
-  private String secret = "com.wj.auth";
+  private String secret = "com.github.nlbwqmz";
   /**
    * 证书地址
    */
@@ -74,17 +72,17 @@ public class TokenFactory {
   /**
    * 发行人
    */
-  private String issuer = "com.wj.auth";
+  private String issuer = "com.github.nlbwqmz";
 
   @PostConstruct
   public void init() {
     AlgorithmEnum algorithmEnum;
-    try{
+    try {
       algorithmEnum = AlgorithmEnum.valueOf(algorithm);
-    } catch (IllegalArgumentException e){
+    } catch (IllegalArgumentException e) {
       throw new TokenFactoryInitException("不支持当前算法[" + algorithm + "]");
     }
-    switch (algorithmEnum){
+    switch (algorithmEnum) {
       case HMAC256:
         initHash();
         break;
@@ -172,14 +170,15 @@ public class TokenFactory {
   public String create(Object obj, long expire) {
     Builder builder = builder(obj, expire);
     if (expire > 0) {
-      return builder.withExpiresAt(new Date(System.currentTimeMillis() + expire)).sign(algorithmObj);
+      return builder.withExpiresAt(new Date(System.currentTimeMillis() + expire))
+          .sign(algorithmObj);
     } else {
       return builder.sign(algorithmObj);
     }
   }
 
-  public void decode(String token){
-    if(StringUtils.isBlank(token)){
+  public void decode(String token) {
+    if (StringUtils.isBlank(token)) {
       throw new CertificateNotFoundException();
     }
     DecodedJWT verify = verify(token);

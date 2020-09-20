@@ -2,9 +2,7 @@ package com.wj.auth.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wj.auth.exception.CertificateException;
 import com.wj.auth.exception.JsonException;
-import java.io.IOException;
 
 /**
  * @Author: 魏杰
@@ -15,7 +13,7 @@ public class JacksonUtils {
 
   private static final ObjectMapper mapper = new ObjectMapper();
 
-  public static String toJSONString(Object object){
+  public static String toJSONString(Object object) {
     try {
       return mapper.writeValueAsString(object);
     } catch (JsonProcessingException e) {
@@ -24,7 +22,7 @@ public class JacksonUtils {
     }
   }
 
-  public static <T> T toObject(String json, Class<T> clazz){
+  public static <T> T toObject(String json, Class<T> clazz) {
     try {
       return mapper.readValue(json, clazz);
     } catch (JsonProcessingException e) {
