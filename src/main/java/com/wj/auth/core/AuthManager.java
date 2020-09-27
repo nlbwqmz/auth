@@ -1,5 +1,6 @@
 package com.wj.auth.core;
 
+import com.wj.auth.common.AuthConfig;
 import com.wj.auth.common.AuthHandlerEntity;
 import com.wj.auth.common.RequestVerification;
 import com.wj.auth.handler.AnonAuthHandler;
@@ -29,10 +30,12 @@ public abstract class AuthManager {
   private Set<String> anonymousPatterns = new HashSet<>();
   private AntPathMatcher antPathMatcher = new AntPathMatcher();
 
-  @Value("${auth.header:Authorization}")
+  /*@Value("${auth.header:Authorization}")
   private String header;
-  @Value("${auth.anon}")
-  private Set<String> anon;
+  @Value("${auth.anon:''}")
+  private Set<String> anon;*/
+  @Autowired
+  private AuthConfig authConfig;
   @Autowired
   private TokenFactory tokenFactory;
   @Value("${server.servlet.context-path}")
@@ -42,7 +45,7 @@ public abstract class AuthManager {
     HandlerHelper handlerHelper = getAuthHandler(request);
     AuthHandler handler = handlerHelper.getHandler();
     String auth = handlerHelper.getAuth();
-    String authenticate = handler.authenticate(request, response, header);
+    String authenticate = handler.authenticate(request, response, authConfig.getHeader());
     if(handler.isDecodeToken()){
       tokenFactory.decode(authenticate);
     }
@@ -84,13 +87,13 @@ public abstract class AuthManager {
    */
   public void loginSuccess(Object obj, long expire) {
     HttpServletResponse response = SubjectManager.getResponse();
-    response.setHeader(header, tokenFactory.create(JacksonUtils.toJSONString(obj), expire));
-    response.setHeader("Access-Control-Expose-Headers", header);
+    response.setHeader(authConfig.getHeader(), tokenFactory.create(JacksonUtils.toJSONString(obj), expire));
+    response.setHeader("Access-Control-Expose-Headers", authConfig.getHeader());
   }
 
   public void setAnon(Set<RequestVerification> anonSet) {
-    if(CollectionUtils.isNotBlank(anon)){
-      anonSet.add(new RequestVerification(CollectionUtils.addUrlPrefix(anon,contextPath)));
+    if(CollectionUtils.isNotBlank(authConfig.getAnon())){
+      anonSet.add(new RequestVerification(CollectionUtils.addUrlPrefix(authConfig.getAnon(),contextPath)));
     }
     Set<String> set = addAnonPatterns();
     if(CollectionUtils.isNotBlank(set)){

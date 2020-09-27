@@ -7,6 +7,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.wj.auth.common.AlgorithmEnum;
+import com.wj.auth.common.AuthConfig;
 import com.wj.auth.exception.CertificateNotFoundException;
 import com.wj.auth.exception.TokenFactoryInitException;
 import com.wj.auth.utils.JacksonUtils;
@@ -23,14 +24,13 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.annotation.PostConstruct;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
 
 /**
  * @Author: weijie
  * @Date: 2020/6/12
  */
-@ConfigurationProperties(prefix = "auth.token")
 public class TokenFactory {
 
   /**
@@ -53,48 +53,31 @@ public class TokenFactory {
    * 过期时间
    */
   private String expireClaim = "expire";
-  /**
-   * 加密方法
-   */
-  private String algorithm = "HMAC256";
-  /**
-   * 密码
-   */
-  private String secret = "com.github.nlbwqmz";
-  /**
-   * 证书地址
-   */
-  private String keystorePath;
-  /**
-   * 证书地址
-   */
-  private String keystoreSecret;
-  /**
-   * 发行人
-   */
-  private String issuer = "com.github.nlbwqmz";
+
+  @Autowired
+  private AuthConfig authConfig;
 
   @PostConstruct
   public void init() {
     AlgorithmEnum algorithmEnum;
     try {
-      algorithmEnum = AlgorithmEnum.valueOf(algorithm);
+      algorithmEnum = AlgorithmEnum.valueOf(authConfig.getToken().getAlgorithm());
     } catch (IllegalArgumentException e) {
-      throw new TokenFactoryInitException("不支持当前算法[" + algorithm + "]");
+      throw new TokenFactoryInitException("不支持当前算法[" + authConfig.getToken().getAlgorithm() + "]");
     }
     switch (algorithmEnum) {
       case HMAC256:
         initHash();
         break;
       case RSA:
-        if (keystorePath == null) {
+        if (authConfig.getToken().getKeystoreLocation() == null) {
           validThisTimeInit();
         } else {
           initFromKeyStore();
         }
         break;
       default:
-        throw new TokenFactoryInitException("[" + algorithm + "]算法不支持");
+        throw new TokenFactoryInitException("[" + authConfig.getToken().getAlgorithm() + "]算法不支持");
     }
   }
 
@@ -107,11 +90,11 @@ public class TokenFactory {
    */
   private void initFromKeyStore() {
     try {
-      File file = ResourceUtils.getFile(keystorePath);
+      File file = ResourceUtils.getFile(authConfig.getToken().getKeystoreLocation());
 
       FileInputStream inputStream = new FileInputStream(file);
       KeyStore keyStore = KeyStore.getInstance("JKS");
-      keyStore.load(inputStream, keystoreSecret.toCharArray());
+      keyStore.load(inputStream, authConfig.getToken().getKeystorePassword().toCharArray());
       Enumeration aliasEnum = keyStore.aliases();
       String keyAlias = "";
       while (aliasEnum.hasMoreElements()) {
@@ -122,7 +105,7 @@ public class TokenFactory {
       publicKey = (RSAPublicKey) ce.getPublicKey();
       //加载私钥,这里填私钥密码
       privateKey = (RSAPrivateKey) ((KeyStore.PrivateKeyEntry) keyStore.getEntry(keyAlias,
-          new KeyStore.PasswordProtection(keystoreSecret.toCharArray()))).getPrivateKey();
+          new KeyStore.PasswordProtection(authConfig.getToken().getKeystorePassword().toCharArray()))).getPrivateKey();
       algorithmObj = Algorithm.RSA256(publicKey, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
@@ -134,30 +117,26 @@ public class TokenFactory {
    * RSA密钥初始化 每次启动自动生成 本次有效
    */
   private void validThisTimeInit() {
-    /* RSA算法要求有一个可信任的随机数源 */
-    //获得对象 KeyPairGenerator 参数 RSA 1024个字节
     KeyPairGenerator keyPairGen = null;
     try {
-      keyPairGen = KeyPairGenerator.getInstance(algorithm);
+      keyPairGen = KeyPairGenerator.getInstance(authConfig.getToken().getAlgorithm());
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
     }
     keyPairGen.initialize(1024);
-    //通过对象 KeyPairGenerator 生成密匙对 KeyPair
     KeyPair keyPair = keyPairGen.generateKeyPair();
-    //通过对象 KeyPair 获取RSA公私钥对象RSAPublicKey RSAPrivateKey
     publicKey = (RSAPublicKey) keyPair.getPublic();
     privateKey = (RSAPrivateKey) keyPair.getPrivate();
     algorithmObj = Algorithm.RSA256(publicKey, privateKey);
   }
 
   private void initHash() {
-    algorithmObj = Algorithm.HMAC256(keystoreSecret);
+    algorithmObj = Algorithm.HMAC256(authConfig.getToken().getKeystorePassword());
   }
 
   private JWTCreator.Builder builder(Object obj, long expire) {
     return JWT.create()
-        .withIssuer(issuer)
+        .withIssuer(authConfig.getToken().getIssuer())
         .withIssuedAt(new Date())
         .withClaim(subjectClaim, JacksonUtils.toJSONString(obj))
         .withClaim(expireClaim, expire);
@@ -189,50 +168,9 @@ public class TokenFactory {
 
   public DecodedJWT verify(String authorization) {
     JWTVerifier verifier = JWT.require(algorithmObj)
-        .withIssuer(issuer)
+        .withIssuer(authConfig.getToken().getIssuer())
         .build();
     DecodedJWT decodedJWT = verifier.verify(authorization);
     return decodedJWT;
-  }
-
-
-  public String getAlgorithm() {
-    return algorithm;
-  }
-
-  public void setAlgorithm(String algorithm) {
-    this.algorithm = algorithm;
-  }
-
-  public String getSecret() {
-    return secret;
-  }
-
-  public void setSecret(String secret) {
-    this.secret = secret;
-  }
-
-  public String getKeystorePath() {
-    return keystorePath;
-  }
-
-  public void setKeystorePath(String keystorePath) {
-    this.keystorePath = keystorePath;
-  }
-
-  public String getKeystoreSecret() {
-    return keystoreSecret;
-  }
-
-  public void setKeystoreSecret(String keystoreSecret) {
-    this.keystoreSecret = keystoreSecret;
-  }
-
-  public String getIssuer() {
-    return issuer;
-  }
-
-  public void setIssuer(String issuer) {
-    this.issuer = issuer;
   }
 }
