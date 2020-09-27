@@ -8,6 +8,7 @@ import java.util.Set;
  * @Date: 2020/9/18
  */
 public class AuthHandlerEntity {
+
   private Set<RequestVerification> requestVerifications;
   private AuthHandler handler;
   private int order;

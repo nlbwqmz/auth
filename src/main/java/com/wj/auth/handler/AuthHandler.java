@@ -12,22 +12,35 @@ public interface AuthHandler {
 
   /**
    * 授权
+   *
    * @return
    */
-  boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth, Set<String> userAuth);
+  boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth,
+      Set<String> userAuth);
 
   /**
    * 认证
+   *
    * @return token
    */
   String authenticate(HttpServletRequest request, HttpServletResponse response, String header);
 
 
-  default boolean isDecodeToken(){
+  /**
+   * 是否解析/验证token
+   *
+   * @return
+   */
+  default boolean isDecodeToken() {
     return true;
   }
 
-  default boolean isRefreshToken(){
+  /**
+   * 是否刷新token
+   *
+   * @return
+   */
+  default boolean isRefreshToken() {
     return true;
   }
 }
