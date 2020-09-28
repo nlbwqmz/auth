@@ -20,7 +20,7 @@ public class AuthConfig {
   private Set<String> anon;
 
   @NestedConfigurationProperty
-  private Token token;
+  private Token token = new Token();
 
   public String getHeader() {
     return header;

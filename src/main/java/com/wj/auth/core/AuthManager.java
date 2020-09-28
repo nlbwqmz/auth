@@ -3,6 +3,7 @@ package com.wj.auth.core;
 import com.wj.auth.common.AuthConfig;
 import com.wj.auth.common.AuthHandlerEntity;
 import com.wj.auth.common.RequestVerification;
+import com.wj.auth.exception.PermissionNotFoundException;
 import com.wj.auth.handler.AnonAuthHandler;
 import com.wj.auth.handler.AuthHandler;
 import com.wj.auth.handler.AuthcAuthHandler;
@@ -11,6 +12,7 @@ import com.wj.auth.utils.JacksonUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,20 +27,14 @@ import org.springframework.util.AntPathMatcher;
  * @date 2020/9/10
  */
 public abstract class AuthManager {
-  private AuthHandler authcHandler = new AuthcAuthHandler();
   private List<AuthHandlerEntity> handlers = new ArrayList<>();
-  private Set<String> anonymousPatterns = new HashSet<>();
-  private AntPathMatcher antPathMatcher = new AntPathMatcher();
-
-  /*@Value("${auth.header:Authorization}")
-  private String header;
-  @Value("${auth.anon:''}")
-  private Set<String> anon;*/
+  private AuthcAuthHandler authcAuthHandler = new AuthcAuthHandler();
   @Autowired
   private AuthConfig authConfig;
   @Autowired
   private TokenFactory tokenFactory;
-  @Value("${server.servlet.context-path}")
+  private AntPathMatcher antPathMatcher = new AntPathMatcher();
+  @Value("${server.servlet.context-path:}")
   private String contextPath;
 
   public boolean doHandler(HttpServletRequest request,HttpServletResponse response){
@@ -54,7 +50,11 @@ public abstract class AuthManager {
       long expire = SubjectManager.getExpire();
       loginSuccess(subject, expire);
     }
-    return handler.authorize(request, response, auth, doAuthorization());
+    if(handler.authorize(request, response, auth, doAuthorization())){
+      return true;
+    } else {
+      throw new PermissionNotFoundException("需要【"+auth+"】权限");
+    }
   }
 
   public HandlerHelper getAuthHandler(HttpServletRequest request){
@@ -65,14 +65,25 @@ public abstract class AuthManager {
       for(RequestVerification requestVerification:requestVerifications){
         Set<String> patterns = Optional.ofNullable(requestVerification.getPatterns()).orElse(new HashSet<>());
         Set<String> methods = Optional.ofNullable(requestVerification.getMethods()).orElse(new HashSet<>());
-        if(patterns.contains(uri) && methods.contains(method)){
+        if(matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || methods.contains(method))){
           return new HandlerHelper(requestVerification.getAuth(),authHandlerEntity.getHandler());
         }
       }
     }
-    return null;
+    return new HandlerHelper("",authcAuthHandler);
   }
 
+
+  private boolean matcher(Set<String> patterns,String uri){
+    Iterator<String> iterator = patterns.iterator();
+    if(iterator.hasNext()){
+      String pattern = iterator.next();
+      if (antPathMatcher.match(pattern,uri)){
+        return true;
+      }
+    }
+    return false;
+  }
   /**
    * 用户授权
    *

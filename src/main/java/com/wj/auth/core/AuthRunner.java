@@ -1,12 +1,11 @@
 package com.wj.auth.core;
 
-import com.wj.auth.annotation.Auth;
 import com.wj.auth.annotation.Anon;
+import com.wj.auth.annotation.Auth;
 import com.wj.auth.common.AuthHandlerEntity;
 import com.wj.auth.common.RequestVerification;
 import com.wj.auth.handler.DefaultAuthHandler;
 import com.wj.auth.utils.CollectionUtils;
-import com.wj.auth.utils.StringUtils;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,10 +26,10 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @ConditionalOnBean(AuthManager.class)
 public class AuthRunner implements ApplicationRunner {
 
-  @Value("${server.servlet.context-path}")
-  private String contextPath;
   private final AuthManager authManager;
   private final RequestMappingHandlerMapping mapping;
+  @Value("${server.servlet.context-path:}")
+  private String contextPath;
 
   public AuthRunner(AuthManager authManager, RequestMappingHandlerMapping mapping) {
     this.authManager = authManager;
@@ -51,20 +50,20 @@ public class AuthRunner implements ApplicationRunner {
       Set<String> methodResult = new HashSet<>();
       Set<String> patternResult = new HashSet<>();
       Set<String> patterns = requestMappingInfo.getPatternsCondition().getPatterns();
-      if(CollectionUtils.isNotBlank(methods)){
+      if (CollectionUtils.isNotBlank(methods)) {
         methods.forEach(item -> methodResult.add(item.name()));
       }
-      if(StringUtils.isNotBlank(contextPath)){
-        patternResult = CollectionUtils.addUrlPrefix(patterns,contextPath);
-      }
+      patternResult = CollectionUtils.addUrlPrefix(patterns, contextPath);
       if (auth != null) {
-        requestVerificationSet.add(new RequestVerification(patternResult, methodResult,auth.value()));
+        requestVerificationSet
+            .add(new RequestVerification(patternResult, methodResult, auth.value()));
       }
       if (anon != null) {
-        freeLoginSet.add(new RequestVerification(patternResult,methodResult));
+        freeLoginSet.add(new RequestVerification(patternResult, methodResult));
       }
     });
-    authManager.addHandler(new AuthHandlerEntity(requestVerificationSet,new DefaultAuthHandler(),0));
+    authManager
+        .addHandler(new AuthHandlerEntity(requestVerificationSet, new DefaultAuthHandler(), 0));
     authManager.setAnon(freeLoginSet);
   }
 }
