@@ -5,8 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/27
+ * @author weijie
+ * @date 2020/9/27
  */
 @ConfigurationProperties("auth")
 public class AuthConfig {

@@ -4,8 +4,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/14
+ * @author weijie
+ * @date 2020/9/14
  */
 public class SubjectManager {
 

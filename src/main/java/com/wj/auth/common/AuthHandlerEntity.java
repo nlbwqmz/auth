@@ -4,8 +4,8 @@ import com.wj.auth.handler.AuthHandler;
 import java.util.Set;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/18
+ * @author weijie
+ * @date 2020/9/18
  */
 public class AuthHandlerEntity {
 

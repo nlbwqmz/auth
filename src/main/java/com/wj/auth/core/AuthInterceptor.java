@@ -5,8 +5,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/10
+ * @author weijie
+ * @date 2020/9/10
  */
 public class AuthInterceptor extends HandlerInterceptorAdapter {
 

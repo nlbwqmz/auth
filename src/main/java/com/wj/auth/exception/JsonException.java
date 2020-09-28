@@ -1,8 +1,8 @@
 package com.wj.auth.exception;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/14
+ * @author weijie
+ * @date 2020/9/14
  */
 public class JsonException extends RuntimeException{
   public JsonException() {

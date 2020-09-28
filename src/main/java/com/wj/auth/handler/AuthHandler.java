@@ -5,8 +5,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/18
+ * @author weijie
+ * @date 2020/9/18
  */
 public interface AuthHandler {
 

@@ -5,8 +5,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @Author: 魏杰
- * @Date: 2020/9/18
+ * @author 魏杰
+ * @date 2020/9/18
  * @Description:
  */
 public class AuthcAuthHandler implements AuthHandler{

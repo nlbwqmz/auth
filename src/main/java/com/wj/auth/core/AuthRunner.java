@@ -21,8 +21,8 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/14
+ * @author weijie
+ * @date 2020/9/14
  */
 @ConditionalOnBean(AuthManager.class)
 public class AuthRunner implements ApplicationRunner {

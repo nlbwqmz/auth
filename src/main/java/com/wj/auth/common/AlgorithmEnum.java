@@ -1,8 +1,8 @@
 package com.wj.auth.common;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/15
+ * @author weijie
+ * @date 2020/9/15
  */
 public enum AlgorithmEnum {
   RSA("RSA"),

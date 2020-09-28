@@ -9,8 +9,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/10
+ * @author weijie
+ * @date 2020/9/10
  */
 @EnableConfigurationProperties({AuthConfig.class})
 @ConditionalOnBean(AuthManager.class)

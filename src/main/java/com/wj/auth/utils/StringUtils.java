@@ -1,8 +1,8 @@
 package com.wj.auth.utils;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/18
+ * @author weijie
+ * @date 2020/9/18
  */
 public class StringUtils {
 

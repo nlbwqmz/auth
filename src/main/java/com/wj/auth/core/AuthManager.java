@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.AntPathMatcher;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/10
+ * @author weijie
+ * @date 2020/9/10
  */
 public abstract class AuthManager {
   private AuthHandler authcHandler = new AuthcAuthHandler();

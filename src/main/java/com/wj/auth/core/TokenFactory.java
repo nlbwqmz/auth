@@ -28,8 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
 
 /**
- * @Author: weijie
- * @Date: 2020/6/12
+ * @author weijie
+ * @date 2020/6/12
  */
 public class TokenFactory {
 
@@ -70,7 +70,7 @@ public class TokenFactory {
         initHash();
         break;
       case RSA:
-        if (authConfig.getToken().getKeystoreLocation() == null) {
+        if (StringUtils.isBlank(authConfig.getToken().getKeystoreLocation())) {
           validThisTimeInit();
         } else {
           initFromKeyStore();
@@ -94,7 +94,7 @@ public class TokenFactory {
 
       FileInputStream inputStream = new FileInputStream(file);
       KeyStore keyStore = KeyStore.getInstance("JKS");
-      keyStore.load(inputStream, authConfig.getToken().getKeystorePassword().toCharArray());
+      keyStore.load(inputStream, authConfig.getToken().getPassword().toCharArray());
       Enumeration aliasEnum = keyStore.aliases();
       String keyAlias = "";
       while (aliasEnum.hasMoreElements()) {
@@ -105,7 +105,8 @@ public class TokenFactory {
       publicKey = (RSAPublicKey) ce.getPublicKey();
       //加载私钥,这里填私钥密码
       privateKey = (RSAPrivateKey) ((KeyStore.PrivateKeyEntry) keyStore.getEntry(keyAlias,
-          new KeyStore.PasswordProtection(authConfig.getToken().getKeystorePassword().toCharArray()))).getPrivateKey();
+          new KeyStore.PasswordProtection(authConfig.getToken().getPassword().toCharArray())))
+          .getPrivateKey();
       algorithmObj = Algorithm.RSA256(publicKey, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
@@ -131,7 +132,7 @@ public class TokenFactory {
   }
 
   private void initHash() {
-    algorithmObj = Algorithm.HMAC256(authConfig.getToken().getKeystorePassword());
+    algorithmObj = Algorithm.HMAC256(authConfig.getToken().getPassword());
   }
 
   private JWTCreator.Builder builder(Object obj, long expire) {

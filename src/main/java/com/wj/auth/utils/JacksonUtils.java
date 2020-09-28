@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wj.auth.exception.JsonException;
 
 /**
- * @Author: 魏杰
- * @Date: 2020/5/3
+ * @author 魏杰
+ * @date 2020/5/3
  * @Description:
  */
 public class JacksonUtils {

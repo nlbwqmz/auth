@@ -1,10 +1,11 @@
 package com.wj.auth.common;
 
 /**
- * @Author: weijie
- * @Date: 2020/9/27
+ * @author weijie
+ * @date 2020/9/27
  */
 public class Token {
+
   /**
    * 加密方法
    */
@@ -17,10 +18,6 @@ public class Token {
    * 证书地址
    */
   private String keystoreLocation;
-  /**
-   * 证书密码
-   */
-  private String keystorePassword;
   /**
    * 发行人
    */
@@ -48,14 +45,6 @@ public class Token {
 
   public void setKeystoreLocation(String keystoreLocation) {
     this.keystoreLocation = keystoreLocation;
-  }
-
-  public String getKeystorePassword() {
-    return keystorePassword;
-  }
-
-  public void setKeystorePassword(String keystorePassword) {
-    this.keystorePassword = keystorePassword;
   }
 
   public String getIssuer() {
