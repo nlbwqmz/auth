@@ -14,6 +14,7 @@ import com.wj.auth.utils.JacksonUtils;
 import com.wj.auth.utils.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -89,10 +90,14 @@ public class TokenFactory {
    * @throws Exception
    */
   private void initFromKeyStore() {
+    File file = null;
     try {
-      File file = ResourceUtils.getFile(authConfig.getToken().getKeystoreLocation());
-
-      FileInputStream inputStream = new FileInputStream(file);
+      file = ResourceUtils.getFile(authConfig.getToken().getKeystoreLocation());
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+      throw new TokenFactoryInitException(e.getMessage());
+    }
+    try(FileInputStream inputStream = new FileInputStream(file);){
       KeyStore keyStore = KeyStore.getInstance("JKS");
       keyStore.load(inputStream, authConfig.getToken().getPassword().toCharArray());
       Enumeration aliasEnum = keyStore.aliases();
@@ -110,7 +115,7 @@ public class TokenFactory {
       algorithmObj = Algorithm.RSA256(publicKey, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
-      throw new TokenFactoryInitException();
+      throw new TokenFactoryInitException(e.getMessage());
     }
   }
 
@@ -123,6 +128,7 @@ public class TokenFactory {
       keyPairGen = KeyPairGenerator.getInstance(authConfig.getToken().getAlgorithm());
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
+      throw new TokenFactoryInitException();
     }
     keyPairGen.initialize(1024);
     KeyPair keyPair = keyPairGen.generateKeyPair();
