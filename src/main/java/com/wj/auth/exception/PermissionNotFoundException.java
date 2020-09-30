@@ -5,7 +5,7 @@ package com.wj.auth.exception;
  * @author weijie
  * @date 2020/9/11
  */
-public class PermissionNotFoundException extends RuntimeException{
+public class PermissionNotFoundException extends AuthException{
   public PermissionNotFoundException(String message) {
     super(message);
   }

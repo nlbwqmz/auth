@@ -6,6 +6,7 @@ import com.wj.auth.common.RequestVerification;
 import com.wj.auth.exception.PermissionNotFoundException;
 import com.wj.auth.handler.AnonAuthHandler;
 import com.wj.auth.handler.AuthHandler;
+import com.wj.auth.handler.AuthcAuthHandler;
 import com.wj.auth.handler.DefaultAuthHandler;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.JacksonUtils;
@@ -128,7 +129,7 @@ public abstract class AuthManager {
   }
 
   public void setAuthc(Set<RequestVerification> authcSet) {
-    addHandler(new AuthHandlerEntity(authcSet, new AnonAuthHandler(), 2));
+    addHandler(new AuthHandlerEntity(authcSet, new AuthcAuthHandler(), 2));
   }
 
   public Set<String> addAnonPatterns() {

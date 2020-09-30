@@ -5,7 +5,7 @@ package com.wj.auth.exception;
  * @author weijie
  * @date 2020/9/11
  */
-public class CertificateExpiredException extends RuntimeException {
+public class CertificateExpiredException extends AuthException {
 
   public CertificateExpiredException(String message) {
     super(message);

@@ -12,6 +12,9 @@ public class DefaultAuthHandler implements AuthHandler{
 
   @Override
   public boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth, Set<String> userAuth) {
+    if(userAuth == null){
+      return false;
+    }
     return userAuth.contains(auth);
   }
 
