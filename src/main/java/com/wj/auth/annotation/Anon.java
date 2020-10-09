@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 免登录
  * @author weijie
- * @date 2020/9/11
+ * @since 2020/9/11
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

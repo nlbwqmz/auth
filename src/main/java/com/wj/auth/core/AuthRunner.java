@@ -4,6 +4,7 @@ import com.wj.auth.annotation.Anon;
 import com.wj.auth.annotation.Auth;
 import com.wj.auth.common.RequestVerification;
 import com.wj.auth.utils.CollectionUtils;
+import com.wj.auth.utils.StringUtils;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,9 +20,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 /**
  * @author weijie
- * @date 2020/9/14
+ * @since 2020/9/14
  */
-@ConditionalOnBean(AuthManager.class)
+@ConditionalOnBean(AuthRealm.class)
 public class AuthRunner implements ApplicationRunner {
 
   private final AuthManager authManager;
@@ -36,9 +37,9 @@ public class AuthRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    Set<RequestVerification> requestVerificationSet = new HashSet<>();
     Map<RequestMappingInfo, HandlerMethod> map = mapping.getHandlerMethods();
-    Set<RequestVerification> freeLoginSet = new HashSet<>();
+    Set<RequestVerification> authSet = new HashSet<>();
+    Set<RequestVerification> anonSet = new HashSet<>();
     Set<RequestVerification> authcSet = new HashSet<>();
     map.forEach((requestMappingInfo, handlerMethod) -> {
       //获取url的Set集合，一个方法可能对应多个url
@@ -47,25 +48,23 @@ public class AuthRunner implements ApplicationRunner {
       Anon anon = method.getAnnotation(Anon.class);
       Set<RequestMethod> methods = requestMappingInfo.getMethodsCondition().getMethods();
       Set<String> methodResult = new HashSet<>();
-      Set<String> patternResult = new HashSet<>();
+      Set<String> patternResult;
       Set<String> patterns = requestMappingInfo.getPatternsCondition().getPatterns();
       if (CollectionUtils.isNotBlank(methods)) {
         methods.forEach(item -> methodResult.add(item.name()));
       }
       patternResult = CollectionUtils.addUrlPrefix(patterns, contextPath);
-      if (auth != null) {
-        requestVerificationSet
-            .add(new RequestVerification(patternResult, methodResult, auth.value()));
-        return;
+      if (auth != null && StringUtils.isNotBlank(auth.value())) {
+        authSet.add(new RequestVerification(patternResult, methodResult, auth.value()));
+      } else if (anon != null) {
+        anonSet.add(new RequestVerification(patternResult, methodResult));
+      } else {
+        authcSet.add(new RequestVerification(patternResult, methodResult));
       }
-      if (anon != null) {
-        freeLoginSet.add(new RequestVerification(patternResult, methodResult));
-        return;
-      }
-      authcSet.add(new RequestVerification(patternResult, methodResult));
     });
-    authManager.setDefault(requestVerificationSet);
-    authManager.setAnon(freeLoginSet);
+    authManager.setAuth(authSet);
+    authManager.setAnon(anonSet);
     authManager.setAuthc(authcSet);
+    authManager.setCustomHandler();
   }
 }

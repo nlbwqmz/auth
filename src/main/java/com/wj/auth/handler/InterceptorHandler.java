@@ -3,12 +3,13 @@ package com.wj.auth.handler;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.lang.Nullable;
 
 /**
  * @author weijie
- * @date 2020/9/18
+ * @since 2020/9/18
  */
-public interface AuthHandler {
+public interface InterceptorHandler {
 
   /**
    * 授权
@@ -16,7 +17,7 @@ public interface AuthHandler {
    * @return
    */
   boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth,
-      Set<String> userAuth);
+      @Nullable Set<String> userAuth);
 
   /**
    * 认证

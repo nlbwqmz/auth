@@ -1,23 +1,23 @@
 package com.wj.auth.common;
 
-import com.wj.auth.handler.AuthHandler;
+import com.wj.auth.handler.InterceptorHandler;
 import java.util.Set;
 
 /**
  * @author weijie
- * @date 2020/9/18
+ * @since 2020/9/18
  */
 public class AuthHandlerEntity {
 
   private Set<RequestVerification> requestVerifications;
-  private AuthHandler handler;
+  private InterceptorHandler handler;
   private int order;
 
   public AuthHandlerEntity() {
   }
 
   public AuthHandlerEntity(Set<RequestVerification> requestVerifications,
-      AuthHandler handler, int order) {
+      InterceptorHandler handler, int order) {
     this.requestVerifications = requestVerifications;
     this.handler = handler;
     this.order = order;
@@ -33,11 +33,11 @@ public class AuthHandlerEntity {
     return this;
   }
 
-  public AuthHandler getHandler() {
+  public InterceptorHandler getHandler() {
     return handler;
   }
 
-  public AuthHandlerEntity setHandler(AuthHandler handler) {
+  public AuthHandlerEntity setHandler(InterceptorHandler handler) {
     this.handler = handler;
     return this;
   }

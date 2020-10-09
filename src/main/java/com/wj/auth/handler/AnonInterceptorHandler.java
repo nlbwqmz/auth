@@ -6,9 +6,9 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author weijie
- * @date 2020/9/18
+ * @since 2020/9/18
  */
-public class AnonAuthHandler implements AuthHandler{
+public class AnonInterceptorHandler implements InterceptorHandler {
 
   @Override
   public boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth, Set<String> userAuth) {

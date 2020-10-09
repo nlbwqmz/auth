@@ -1,18 +1,19 @@
 package com.wj.auth.handler;
 
+import com.wj.auth.utils.CollectionUtils;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author weijie
- * @date 2020/9/18
+ * @since 2020/9/18
  */
-public class DefaultAuthHandler implements AuthHandler{
+public class AuthInterceptorHandler implements InterceptorHandler {
 
   @Override
   public boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth, Set<String> userAuth) {
-    if(userAuth == null){
+    if(CollectionUtils.isBlank(userAuth)){
       return false;
     }
     return userAuth.contains(auth);

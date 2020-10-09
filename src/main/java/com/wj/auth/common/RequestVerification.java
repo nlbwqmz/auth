@@ -5,7 +5,7 @@ import java.util.Set;
 /**
  * 请求验证
  * @author weijie
- * @date 2020/9/18
+ * @since 2020/9/18
  */
 public class RequestVerification {
   private Set<String> patterns;

@@ -2,7 +2,7 @@ package com.wj.auth.common;
 
 /**
  * @author weijie
- * @date 2020/9/15
+ * @since 2020/9/15
  */
 public enum AlgorithmEnum {
   RSA("RSA"),

@@ -6,10 +6,10 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author 魏杰
- * @date 2020/9/18
+ * @since 2020/9/18
  * @Description:
  */
-public class AuthcAuthHandler implements AuthHandler{
+public class AuthcInterceptorHandler implements InterceptorHandler {
 
   @Override
   public boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth, Set<String> userAuth) {

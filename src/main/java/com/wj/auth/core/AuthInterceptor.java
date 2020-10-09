@@ -6,7 +6,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
  * @author weijie
- * @date 2020/9/10
+ * @since 2020/9/10
  */
 public class AuthInterceptor extends HandlerInterceptorAdapter {
 

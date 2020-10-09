@@ -6,7 +6,7 @@ import java.util.Set;
 
 /**
  * @author weijie
- * @date 2020/9/18
+ * @since 2020/9/18
  */
 public class CollectionUtils {
   /**
@@ -35,6 +35,18 @@ public class CollectionUtils {
       }
     }
     return result;
+  }
+
+  public static boolean containsIgnoreCase(Collection<String> collection, String target){
+    if(isBlank(collection)){
+      return false;
+    }
+    for(String str:collection){
+      if(str.equalsIgnoreCase(target)){
+        return true;
+      }
+    }
+    return false;
   }
 
 }

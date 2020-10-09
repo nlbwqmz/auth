@@ -1,15 +1,17 @@
 package com.wj.auth.core;
 
-import com.wj.auth.common.AuthConfig;
+import com.wj.auth.common.AuthConfiguration;
 import com.wj.auth.common.AuthHandlerEntity;
 import com.wj.auth.common.RequestVerification;
+import com.wj.auth.exception.AuthException;
 import com.wj.auth.exception.PermissionNotFoundException;
-import com.wj.auth.handler.AnonAuthHandler;
-import com.wj.auth.handler.AuthHandler;
-import com.wj.auth.handler.AuthcAuthHandler;
-import com.wj.auth.handler.DefaultAuthHandler;
+import com.wj.auth.handler.AnonInterceptorHandler;
+import com.wj.auth.handler.AuthInterceptorHandler;
+import com.wj.auth.handler.AuthcInterceptorHandler;
+import com.wj.auth.handler.InterceptorHandler;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.JacksonUtils;
+import com.wj.auth.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -19,31 +21,42 @@ import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.util.AntPathMatcher;
 
 /**
  * @author weijie
- * @date 2020/9/10
+ * @since 2020/9/10
  */
-public abstract class AuthManager {
+@ConditionalOnBean(AuthRealm.class)
+public class AuthManager {
 
+  private static final Logger logger = LoggerFactory.getLogger(AuthManager.class);
+
+  private final AuthConfiguration authConfiguration;
+  private final TokenFactory tokenFactory;
+  private final AuthRealm authRealm;
   private List<AuthHandlerEntity> handlers = new ArrayList<>();
-  @Autowired
-  private AuthConfig authConfig;
-  @Autowired
-  private TokenFactory tokenFactory;
   private AntPathMatcher antPathMatcher = new AntPathMatcher();
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
-  public boolean doHandler(HttpServletRequest request, HttpServletResponse response) {
+  public AuthManager(AuthConfiguration authConfiguration, TokenFactory tokenFactory,
+      AuthRealm authRealm) {
+    this.authConfiguration = authConfiguration;
+    this.tokenFactory = tokenFactory;
+    this.authRealm = authRealm;
+  }
+
+  protected boolean doHandler(HttpServletRequest request, HttpServletResponse response) {
     HandlerHelper handlerHelper = getAuthHandler(request);
     if (handlerHelper != null) {
-      AuthHandler handler = handlerHelper.getHandler();
+      InterceptorHandler handler = handlerHelper.getHandler();
       String auth = handlerHelper.getAuth();
-      String authenticate = handler.authenticate(request, response, authConfig.getHeader());
+      String authenticate = handler.authenticate(request, response, authConfiguration.getHeader());
       if (handler.isDecodeToken()) {
         tokenFactory.decode(authenticate);
       }
@@ -52,7 +65,7 @@ public abstract class AuthManager {
         long expire = SubjectManager.getExpire();
         loginSuccess(subject, expire);
       }
-      if (handler.authorize(request, response, auth, doAuthorization())) {
+      if (handler.authorize(request, response, auth, authRealm.doAuthorization())) {
         return true;
       } else {
         throw new PermissionNotFoundException("需要【" + auth + "】权限");
@@ -62,7 +75,7 @@ public abstract class AuthManager {
     }
   }
 
-  public HandlerHelper getAuthHandler(HttpServletRequest request) {
+  private HandlerHelper getAuthHandler(HttpServletRequest request) {
     String uri = request.getRequestURI();
     String method = request.getMethod();
     for (AuthHandlerEntity authHandlerEntity : handlers) {
@@ -72,8 +85,8 @@ public abstract class AuthManager {
             .orElse(new HashSet<>());
         Set<String> methods = Optional.ofNullable(requestVerification.getMethods())
             .orElse(new HashSet<>());
-        if (matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || methods
-            .contains(method))) {
+        if (matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || CollectionUtils
+            .containsIgnoreCase(methods, method))) {
           return new HandlerHelper(requestVerification.getAuth(), authHandlerEntity.getHandler());
         }
       }
@@ -93,13 +106,6 @@ public abstract class AuthManager {
   }
 
   /**
-   * 用户授权
-   *
-   * @return
-   */
-  public abstract Set<String> doAuthorization();
-
-  /**
    * 登录成功
    *
    * @param obj
@@ -107,49 +113,73 @@ public abstract class AuthManager {
    */
   public void loginSuccess(Object obj, long expire) {
     HttpServletResponse response = SubjectManager.getResponse();
-    response.setHeader(authConfig.getHeader(),
+    response.setHeader(authConfiguration.getHeader(),
         tokenFactory.create(JacksonUtils.toJSONString(obj), expire));
-    response.setHeader("Access-Control-Expose-Headers", authConfig.getHeader());
+    response.setHeader("Access-Control-Expose-Headers", authConfiguration.getHeader());
   }
 
-  public void setDefault(Set<RequestVerification> defaultSet) {
-    addHandler(new AuthHandlerEntity(defaultSet, new DefaultAuthHandler(), 0));
+  protected void setAuth(Set<RequestVerification> authSet) {
+    Set<RequestVerification> requestVerificationSet = authRealm.addAuthPatterns();
+    if (CollectionUtils.isNotBlank(requestVerificationSet)) {
+      for (RequestVerification requestVerification : requestVerificationSet) {
+        Set<String> patterns = requestVerification.getPatterns();
+        String auth = requestVerification.getAuth();
+        if (CollectionUtils.isNotBlank(patterns) && StringUtils.isNotBlank(auth)) {
+          requestVerification.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
+          authSet.add(requestVerification);
+        } else {
+          throw new AuthException("function addAuthPatterns: neither patterns nor auth can be blank.");
+        }
+      }
+    }
+    addHandler(new AuthHandlerEntity(authSet, new AuthInterceptorHandler(), 0));
   }
 
-  public void setAnon(Set<RequestVerification> anonSet) {
-    if (CollectionUtils.isNotBlank(authConfig.getAnon())) {
+  protected void setAnon(Set<RequestVerification> anonSet) {
+    if (CollectionUtils.isNotBlank(authConfiguration.getAnon())) {
       anonSet.add(
-          new RequestVerification(CollectionUtils.addUrlPrefix(authConfig.getAnon(), contextPath)));
+          new RequestVerification(
+              CollectionUtils.addUrlPrefix(authConfiguration.getAnon(), contextPath)));
     }
-    Set<String> set = addAnonPatterns();
-    if (CollectionUtils.isNotBlank(set)) {
-      anonSet.add(new RequestVerification(CollectionUtils.addUrlPrefix(set, contextPath)));
+    Set<RequestVerification> anonRequestVerification = authRealm.addAnonPatterns();
+    if (CollectionUtils.isNotBlank(anonRequestVerification)) {
+      for (RequestVerification requestVerification : anonRequestVerification) {
+        Set<String> patterns = requestVerification.getPatterns();
+        if (CollectionUtils.isNotBlank(patterns)) {
+          requestVerification.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
+          anonSet.add(requestVerification);
+        } else {
+          throw new AuthException("function addAnonPatterns: patterns can't be blank.");
+        }
+      }
     }
-    addHandler(new AuthHandlerEntity(anonSet, new AnonAuthHandler(), 1));
+    addHandler(new AuthHandlerEntity(anonSet, new AnonInterceptorHandler(), 100));
   }
 
-  public void setAuthc(Set<RequestVerification> authcSet) {
-    addHandler(new AuthHandlerEntity(authcSet, new AuthcAuthHandler(), 2));
+  protected void setAuthc(Set<RequestVerification> authcSet) {
+    addHandler(new AuthHandlerEntity(authcSet, new AuthcInterceptorHandler(), 200));
   }
 
-  public Set<String> addAnonPatterns() {
-    return null;
-  }
-
-  public void addHandler(AuthHandlerEntity authHandlerEntity) {
-    this.handlers.add(authHandlerEntity);
+  protected void setCustomHandler() {
+    Set<AuthHandlerEntity> customHandler = authRealm.addCustomHandler();
+    if (CollectionUtils.isNotBlank(customHandler)) {
+      for (AuthHandlerEntity authHandlerEntity : customHandler) {
+        addHandler(authHandlerEntity);
+      }
+    }
     this.handlers.sort(Comparator.comparingInt(AuthHandlerEntity::getOrder));
   }
 
-  class HandlerHelper {
+  private void addHandler(AuthHandlerEntity authHandlerEntity) {
+    this.handlers.add(authHandlerEntity);
+  }
+
+  static class HandlerHelper {
 
     private String auth;
-    private AuthHandler handler;
+    private InterceptorHandler handler;
 
-    public HandlerHelper() {
-    }
-
-    public HandlerHelper(String auth, AuthHandler handler) {
+    public HandlerHelper(String auth, InterceptorHandler handler) {
       this.auth = auth;
       this.handler = handler;
     }
@@ -162,11 +192,11 @@ public abstract class AuthManager {
       this.auth = auth;
     }
 
-    public AuthHandler getHandler() {
+    public InterceptorHandler getHandler() {
       return handler;
     }
 
-    public void setHandler(AuthHandler handler) {
+    public void setHandler(InterceptorHandler handler) {
       this.handler = handler;
     }
   }

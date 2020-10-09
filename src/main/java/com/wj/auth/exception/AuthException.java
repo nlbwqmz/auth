@@ -2,7 +2,7 @@ package com.wj.auth.exception;
 
 /**
  * @author weijie
- * @date: 2020/9/30
+ * @since: 2020/9/30
  */
 public class AuthException extends RuntimeException{
   public AuthException() {

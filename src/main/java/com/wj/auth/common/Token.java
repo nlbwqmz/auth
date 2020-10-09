@@ -2,7 +2,7 @@ package com.wj.auth.common;
 
 /**
  * @author weijie
- * @date 2020/9/27
+ * @since 2020/9/27
  */
 public class Token {
 

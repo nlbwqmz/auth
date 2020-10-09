@@ -6,10 +6,11 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * @author weijie
- * @date 2020/9/27
+ * @since 2020/9/27
  */
 @ConfigurationProperties("auth")
-public class AuthConfig {
+public class AuthConfiguration {
+
   /**
    * Token头名称
    */
