@@ -18,7 +18,7 @@ public class JacksonUtils {
       return mapper.writeValueAsString(object);
     } catch (JsonProcessingException e) {
       e.printStackTrace();
-      throw new JsonException();
+      throw new JsonException(e.getMessage());
     }
   }
 
@@ -27,7 +27,7 @@ public class JacksonUtils {
       return mapper.readValue(json, clazz);
     } catch (JsonProcessingException e) {
       e.printStackTrace();
-      throw new JsonException();
+      throw new JsonException(e.getMessage());
     }
   }
 }

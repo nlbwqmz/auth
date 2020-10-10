@@ -9,6 +9,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.wj.auth.common.AlgorithmEnum;
 import com.wj.auth.common.AuthConfiguration;
 import com.wj.auth.common.Token;
+import com.wj.auth.exception.CertificateException;
 import com.wj.auth.exception.CertificateNotFoundException;
 import com.wj.auth.exception.TokenFactoryInitException;
 import com.wj.auth.utils.JacksonUtils;
@@ -68,7 +69,7 @@ public class TokenFactory {
     try {
       algorithmEnum = AlgorithmEnum.valueOf(token.getAlgorithm());
     } catch (IllegalArgumentException e) {
-      throw new TokenFactoryInitException("不支持当前算法[" + token.getAlgorithm() + "]");
+      throw new TokenFactoryInitException(String.format("The algorithm %s is not supported", token.getAlgorithm()));
     }
     switch (algorithmEnum) {
       case HMAC256:
@@ -82,17 +83,10 @@ public class TokenFactory {
         }
         break;
       default:
-        throw new TokenFactoryInitException("[" + token.getAlgorithm() + "]算法不支持");
+        throw new TokenFactoryInitException(String.format("The algorithm %s is not supported", token.getAlgorithm()));
     }
   }
 
-
-  /**
-   * 通过 证书 获取 RSA公钥私钥 加载私钥另一写法 PrivateKey privateKey = (PrivateKey) keyStore.getKey(keyAlias,
-   * "weijie".toCharArray());
-   *
-   * @throws Exception
-   */
   private void initFromKeyStore() {
     File file = null;
     try {
@@ -112,7 +106,6 @@ public class TokenFactory {
       Certificate ce = keyStore.getCertificate(keyAlias);
 
       publicKey = (RSAPublicKey) ce.getPublicKey();
-      //加载私钥,这里填私钥密码
       privateKey = (RSAPrivateKey) ((KeyStore.PrivateKeyEntry) keyStore.getEntry(keyAlias,
           new KeyStore.PasswordProtection(token.getPassword().toCharArray())))
           .getPrivateKey();
@@ -124,7 +117,7 @@ public class TokenFactory {
   }
 
   /**
-   * RSA密钥初始化 每次启动自动生成 本次有效
+   * RSA密钥初始化 每次启动自动生成 当次有效
    */
   private void validThisTimeInit() {
     KeyPairGenerator keyPairGen = null;
@@ -181,7 +174,11 @@ public class TokenFactory {
     JWTVerifier verifier = JWT.require(algorithmObj)
         .withIssuer(token.getIssuer())
         .build();
-    DecodedJWT decodedJWT = verifier.verify(authorization);
-    return decodedJWT;
+    try{
+      DecodedJWT decodedJWT = verifier.verify(authorization);
+      return decodedJWT;
+    } catch (Exception e){
+      throw new CertificateException(e.getMessage());
+    }
   }
 }

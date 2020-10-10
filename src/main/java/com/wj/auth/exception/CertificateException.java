@@ -6,7 +6,7 @@ package com.wj.auth.exception;
  */
 public class CertificateException extends AuthException {
 
-  public CertificateException() {
-    super("凭证异常！");
+  public CertificateException(String msg) {
+    super(msg);
   }
 }

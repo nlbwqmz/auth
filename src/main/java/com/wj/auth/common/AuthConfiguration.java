@@ -20,6 +20,11 @@ public class AuthConfiguration {
    */
   private Set<String> anon;
 
+  /**
+   * 是否开启注解
+   */
+  private boolean annotationEnabled = true;
+
   @NestedConfigurationProperty
   private Token token = new Token();
 
@@ -45,5 +50,13 @@ public class AuthConfiguration {
 
   public void setToken(Token token) {
     this.token = token;
+  }
+
+  public boolean isAnnotationEnabled() {
+    return annotationEnabled;
+  }
+
+  public void setAnnotationEnabled(boolean annotationEnabled) {
+    this.annotationEnabled = annotationEnabled;
   }
 }

@@ -7,7 +7,7 @@ package com.wj.auth.exception;
 public class TokenFactoryInitException extends AuthException{
 
   public TokenFactoryInitException() {
-    super("JwtUtil初始化错误");
+    super("TokenFactory init error");
   }
   public TokenFactoryInitException(String msg) {
     super(msg);

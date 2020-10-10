@@ -5,7 +5,8 @@ package com.wj.auth.exception;
  * @since 2020/9/14
  */
 public class JsonException extends AuthException{
-  public JsonException() {
-    super("JSON转换异常！");
+
+  public JsonException(String msg) {
+    super(msg);
   }
 }

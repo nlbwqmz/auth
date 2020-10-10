@@ -22,7 +22,7 @@ public interface AuthRealm {
    *
    * @return 免登录 Patterns 集合
    */
-  default Set<RequestVerification> addAnonPatterns() {
+  default RequestVerification addAnonPatterns() {
     return null;
   }
 
@@ -34,6 +34,11 @@ public interface AuthRealm {
   default Set<RequestVerification> addAuthPatterns() {
     return null;
   }
+
+  /**
+   * 添加自定义拦截器
+   * @return 自定义拦截器集合
+   */
   default Set<AuthHandlerEntity> addCustomHandler(){
     return null;
   }

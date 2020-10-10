@@ -21,8 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.util.AntPathMatcher;
@@ -33,8 +31,6 @@ import org.springframework.util.AntPathMatcher;
  */
 @ConditionalOnBean(AuthRealm.class)
 public class AuthManager {
-
-  private static final Logger logger = LoggerFactory.getLogger(AuthManager.class);
 
   private final AuthConfiguration authConfiguration;
   private final TokenFactory tokenFactory;
@@ -68,7 +64,7 @@ public class AuthManager {
       if (handler.authorize(request, response, auth, authRealm.doAuthorization())) {
         return true;
       } else {
-        throw new PermissionNotFoundException("需要【" + auth + "】权限");
+        throw new PermissionNotFoundException(String.format("%s permission required", auth));
       }
     } else {
       return true;
@@ -119,6 +115,7 @@ public class AuthManager {
   }
 
   protected void setAuth(Set<RequestVerification> authSet) {
+
     Set<RequestVerification> requestVerificationSet = authRealm.addAuthPatterns();
     if (CollectionUtils.isNotBlank(requestVerificationSet)) {
       for (RequestVerification requestVerification : requestVerificationSet) {
@@ -128,7 +125,10 @@ public class AuthManager {
           requestVerification.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
           authSet.add(requestVerification);
         } else {
-          throw new AuthException("function addAuthPatterns: neither patterns nor auth can be blank.");
+          String clazz = authRealm.getClass().toString();
+          clazz = clazz.substring(0, clazz.indexOf("$$"));
+          throw new AuthException(
+              String.format("at %s@addAuthPatterns, neither patterns nor auth can be blank.", clazz));
         }
       }
     }
@@ -141,16 +141,16 @@ public class AuthManager {
           new RequestVerification(
               CollectionUtils.addUrlPrefix(authConfiguration.getAnon(), contextPath)));
     }
-    Set<RequestVerification> anonRequestVerification = authRealm.addAnonPatterns();
-    if (CollectionUtils.isNotBlank(anonRequestVerification)) {
-      for (RequestVerification requestVerification : anonRequestVerification) {
-        Set<String> patterns = requestVerification.getPatterns();
-        if (CollectionUtils.isNotBlank(patterns)) {
-          requestVerification.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
-          anonSet.add(requestVerification);
-        } else {
-          throw new AuthException("function addAnonPatterns: patterns can't be blank.");
-        }
+    RequestVerification anonRequestVerification = authRealm.addAnonPatterns();
+    if (anonRequestVerification != null) {
+      Set<String> patterns = anonRequestVerification.getPatterns();
+      if (CollectionUtils.isNotBlank(patterns)) {
+        anonRequestVerification.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
+        anonSet.add(anonRequestVerification);
+      } else {
+        String clazz = authRealm.getClass().toString();
+        clazz = clazz.substring(0, clazz.indexOf("$$"));
+        throw new AuthException(String.format("at %s@addAnonPatterns, patterns can't be blank.", clazz));
       }
     }
     addHandler(new AuthHandlerEntity(anonSet, new AnonInterceptorHandler(), 100));
@@ -174,7 +174,7 @@ public class AuthManager {
     this.handlers.add(authHandlerEntity);
   }
 
-  static class HandlerHelper {
+  private static class HandlerHelper {
 
     private String auth;
     private InterceptorHandler handler;
