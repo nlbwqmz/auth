@@ -1,8 +1,6 @@
 package com.wj.auth.core;
 
-import com.wj.auth.common.AuthConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -12,9 +10,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @author weijie
  * @since 2020/9/10
  */
-@EnableConfigurationProperties({AuthConfiguration.class})
 @ConditionalOnBean(AuthRealm.class)
-@Import({AuthManager.class,TokenFactory.class})
+@Import({AuthManager.class, TokenFactory.class})
 public class WebConfigurer implements WebMvcConfigurer {
 
   private final AuthManager authManager;

@@ -3,11 +3,13 @@ package com.wj.auth.common;
 import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * @author weijie
  * @since 2020/9/27
  */
+@Configuration
 @ConfigurationProperties("auth")
 public class AuthConfiguration {
 
@@ -27,6 +29,9 @@ public class AuthConfiguration {
 
   @NestedConfigurationProperty
   private Token token = new Token();
+
+  @NestedConfigurationProperty
+  private Xss xss = new Xss();
 
   public String getHeader() {
     return header;
@@ -58,5 +63,13 @@ public class AuthConfiguration {
 
   public void setAnnotationEnabled(boolean annotationEnabled) {
     this.annotationEnabled = annotationEnabled;
+  }
+
+  public Xss getXss() {
+    return xss;
+  }
+
+  public void setXss(Xss xss) {
+    this.xss = xss;
   }
 }

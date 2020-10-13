@@ -9,13 +9,13 @@ import com.wj.auth.handler.AnonInterceptorHandler;
 import com.wj.auth.handler.AuthInterceptorHandler;
 import com.wj.auth.handler.AuthcInterceptorHandler;
 import com.wj.auth.handler.InterceptorHandler;
+import com.wj.auth.utils.AuthUtils;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.JacksonUtils;
 import com.wj.auth.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.util.AntPathMatcher;
 
 /**
  * @author weijie
@@ -36,9 +35,28 @@ public class AuthManager {
   private final TokenFactory tokenFactory;
   private final AuthRealm authRealm;
   private List<AuthHandlerEntity> handlers = new ArrayList<>();
-  private AntPathMatcher antPathMatcher = new AntPathMatcher();
   @Value("${server.servlet.context-path:}")
   private String contextPath;
+  private Set<String> exclusions;
+
+//  public void xss(HttpServletRequest request, HttpServletResponse response) {
+//    if (exclusions == null) {
+//      Set<String> config = Optional.ofNullable(authConfiguration.getXss().getExclusions())
+//          .orElse(Sets.newHashSet());
+//      if (!Strings.isNullOrEmpty(contextPath)) {
+//        exclusions = CollectionUtils.addUrlPrefix(config, contextPath);
+//      } else {
+//        exclusions = config;
+//      }
+//    }
+//    String uri = request.getRequestURI();
+//    if (AuthUtils.matcher(exclusions, uri)) {
+//
+//      chain.doFilter(new XssAndSqlHttpServletRequestWrapper(req), response);
+//    } else {
+//      chain.doFilter(request, response);
+//    }
+//  }
 
   public AuthManager(AuthConfiguration authConfiguration, TokenFactory tokenFactory,
       AuthRealm authRealm) {
@@ -81,7 +99,7 @@ public class AuthManager {
             .orElse(new HashSet<>());
         Set<String> methods = Optional.ofNullable(requestVerification.getMethods())
             .orElse(new HashSet<>());
-        if (matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || CollectionUtils
+        if (AuthUtils.matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || CollectionUtils
             .containsIgnoreCase(methods, method))) {
           return new HandlerHelper(requestVerification.getAuth(), authHandlerEntity.getHandler());
         }
@@ -90,16 +108,6 @@ public class AuthManager {
     return null;
   }
 
-  private boolean matcher(Set<String> patterns, String uri) {
-    Iterator<String> iterator = patterns.iterator();
-    if (iterator.hasNext()) {
-      String pattern = iterator.next();
-      if (antPathMatcher.match(pattern, uri)) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   /**
    * 登录成功
@@ -128,7 +136,8 @@ public class AuthManager {
           String clazz = authRealm.getClass().toString();
           clazz = clazz.substring(0, clazz.indexOf("$$"));
           throw new AuthException(
-              String.format("at %s@addAuthPatterns, neither patterns nor auth can be blank.", clazz));
+              String
+                  .format("at %s@addAuthPatterns, neither patterns nor auth can be blank.", clazz));
         }
       }
     }
@@ -150,7 +159,8 @@ public class AuthManager {
       } else {
         String clazz = authRealm.getClass().toString();
         clazz = clazz.substring(0, clazz.indexOf("$$"));
-        throw new AuthException(String.format("at %s@addAnonPatterns, patterns can't be blank.", clazz));
+        throw new AuthException(
+            String.format("at %s@addAnonPatterns, patterns can't be blank.", clazz));
       }
     }
     addHandler(new AuthHandlerEntity(anonSet, new AnonInterceptorHandler(), 100));
