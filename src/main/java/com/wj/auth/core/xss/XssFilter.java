@@ -63,7 +63,8 @@ public class XssFilter implements Filter {
       httpServletResponse
           .setHeader("Access-Control-Allow-Methods", cors.getAccessControlAllowMethods());
       httpServletResponse
-          .setHeader("Access-Control-Allow-Credentials", cors.getAccessControlAllowCredentials());
+          .setHeader("Access-Control-Allow-Credentials",
+              String.valueOf(cors.getAccessControlAllowCredentials()));
       httpServletResponse.setHeader("Access-Control-Max-Age", cors.getAccessControlMaxAge());
     }
     if (authConfiguration.getXss().isQueryEnable()) {

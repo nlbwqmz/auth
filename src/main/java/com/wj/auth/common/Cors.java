@@ -10,7 +10,7 @@ public class Cors {
   private String accessControlAllowOrigin = "*";
   private String accessControlAllowHeaders = "*";
   private String accessControlAllowMethods = "PUT,POST,GET,DELETE,OPTIONS";
-  private String accessControlAllowCredentials = "false";
+  private boolean accessControlAllowCredentials = false;
   private String accessControlMaxAge = "1800";
 
   public boolean isEnabled() {
@@ -45,11 +45,11 @@ public class Cors {
     this.accessControlAllowMethods = accessControlAllowMethods;
   }
 
-  public String getAccessControlAllowCredentials() {
+  public boolean getAccessControlAllowCredentials() {
     return accessControlAllowCredentials;
   }
 
-  public void setAccessControlAllowCredentials(String accessControlAllowCredentials) {
+  public void setAccessControlAllowCredentials(boolean accessControlAllowCredentials) {
     this.accessControlAllowCredentials = accessControlAllowCredentials;
   }
 
