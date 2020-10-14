@@ -1,5 +1,7 @@
 package com.wj.auth.common;
 
+import com.wj.auth.core.security.entity.Token;
+import com.wj.auth.core.xss.entity.Xss;
 import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;

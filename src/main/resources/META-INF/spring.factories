@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.wj.auth.core.AuthRunner,com.wj.auth.core.WebConfigurer,com.wj.auth.xss.XssFilter,com.wj.auth.common.AuthConfiguration,com.wj.auth.xss.XssConfigurer
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.wj.auth.core.security.AuthRunner,com.wj.auth.common.AuthConfiguration

@@ -1,4 +1,4 @@
-package com.wj.auth.xss;
+package com.wj.auth.core.xss;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -10,7 +10,7 @@ import java.io.IOException;
  * @author weijie
  * @since 2020/10/13
  */
-public class XssStringJsonSerializer extends JsonSerializer<String> {
+public class XssSerializer extends JsonSerializer<String> {
 
   @Override
   public Class<String> handledType() {

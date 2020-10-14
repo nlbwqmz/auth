@@ -1,24 +1,23 @@
-package com.wj.auth.common;
+package com.wj.auth.core.xss.entity;
 
 import java.util.Set;
 
 /**
- * @Author: 魏杰
- * @Date: 2020/10/13
- * @Description:
+ * @author 魏杰
+ * @since 2020/10/13
  */
 public class Xss {
 
-  private boolean enable;
+  private boolean queryEnable;
   private boolean bodyEnable;
   private Set<String> exclusions;
 
-  public boolean isEnable() {
-    return enable;
+  public boolean isQueryEnable() {
+    return queryEnable;
   }
 
-  public void setEnable(boolean enable) {
-    this.enable = enable;
+  public void setQueryEnable(boolean queryEnable) {
+    this.queryEnable = queryEnable;
   }
 
   public boolean isBodyEnable() {

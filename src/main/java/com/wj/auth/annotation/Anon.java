@@ -7,10 +7,12 @@ import java.lang.annotation.Target;
 
 /**
  * 免登录
+ *
  * @author weijie
  * @since 2020/9/11
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Anon {
+
 }

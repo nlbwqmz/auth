@@ -15,7 +15,7 @@ public class AuthUtils {
 
   public static boolean matcher(Set<String> patterns, String uri) {
     Iterator<String> iterator = patterns.iterator();
-    if (iterator.hasNext()) {
+    while (iterator.hasNext()) {
       String pattern = iterator.next();
       if (antPathMatcher.match(pattern, uri)) {
         return true;

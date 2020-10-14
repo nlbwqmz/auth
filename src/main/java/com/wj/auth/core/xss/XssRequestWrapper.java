@@ -1,4 +1,4 @@
-package com.wj.auth.xss;
+package com.wj.auth.core.xss;
 
 import com.google.common.base.Strings;
 import com.google.common.html.HtmlEscapers;
@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletRequestWrapper;
  * @author weijie
  * @since 2020/10/13
  */
-public class XssAndSqlHttpServletRequestWrapper extends HttpServletRequestWrapper {
+public class XssRequestWrapper extends HttpServletRequestWrapper {
 
-  public XssAndSqlHttpServletRequestWrapper(HttpServletRequest request) {
+  public XssRequestWrapper(HttpServletRequest request) {
     super(request);
   }
 

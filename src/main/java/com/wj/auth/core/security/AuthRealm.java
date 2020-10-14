@@ -1,7 +1,7 @@
-package com.wj.auth.core;
+package com.wj.auth.core.security;
 
-import com.wj.auth.common.AuthHandlerEntity;
-import com.wj.auth.common.RequestVerification;
+import com.wj.auth.core.security.entity.AuthHandlerEntity;
+import com.wj.auth.core.security.entity.RequestVerification;
 import java.util.Set;
 
 /**
@@ -37,9 +37,10 @@ public interface AuthRealm {
 
   /**
    * 添加自定义拦截器
+   *
    * @return 自定义拦截器集合
    */
-  default Set<AuthHandlerEntity> addCustomHandler(){
+  default Set<AuthHandlerEntity> addCustomHandler() {
     return null;
   }
 }

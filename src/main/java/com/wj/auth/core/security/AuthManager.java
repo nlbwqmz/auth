@@ -1,18 +1,19 @@
-package com.wj.auth.core;
+package com.wj.auth.core.security;
 
+import com.google.common.base.Strings;
 import com.wj.auth.common.AuthConfiguration;
-import com.wj.auth.common.AuthHandlerEntity;
-import com.wj.auth.common.RequestVerification;
+import com.wj.auth.common.SubjectManager;
+import com.wj.auth.core.security.entity.AuthHandlerEntity;
+import com.wj.auth.core.security.entity.RequestVerification;
+import com.wj.auth.core.security.handler.AnonInterceptorHandler;
+import com.wj.auth.core.security.handler.AuthInterceptorHandler;
+import com.wj.auth.core.security.handler.AuthcInterceptorHandler;
+import com.wj.auth.core.security.handler.InterceptorHandler;
 import com.wj.auth.exception.AuthException;
 import com.wj.auth.exception.PermissionNotFoundException;
-import com.wj.auth.handler.AnonInterceptorHandler;
-import com.wj.auth.handler.AuthInterceptorHandler;
-import com.wj.auth.handler.AuthcInterceptorHandler;
-import com.wj.auth.handler.InterceptorHandler;
 import com.wj.auth.utils.AuthUtils;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.JacksonUtils;
-import com.wj.auth.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -32,36 +33,16 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 public class AuthManager {
 
   private final AuthConfiguration authConfiguration;
-  private final TokenFactory tokenFactory;
+  private final AuthTokenGenerate authTokenGenerate;
   private final AuthRealm authRealm;
   private List<AuthHandlerEntity> handlers = new ArrayList<>();
   @Value("${server.servlet.context-path:}")
   private String contextPath;
-  private Set<String> exclusions;
 
-//  public void xss(HttpServletRequest request, HttpServletResponse response) {
-//    if (exclusions == null) {
-//      Set<String> config = Optional.ofNullable(authConfiguration.getXss().getExclusions())
-//          .orElse(Sets.newHashSet());
-//      if (!Strings.isNullOrEmpty(contextPath)) {
-//        exclusions = CollectionUtils.addUrlPrefix(config, contextPath);
-//      } else {
-//        exclusions = config;
-//      }
-//    }
-//    String uri = request.getRequestURI();
-//    if (AuthUtils.matcher(exclusions, uri)) {
-//
-//      chain.doFilter(new XssAndSqlHttpServletRequestWrapper(req), response);
-//    } else {
-//      chain.doFilter(request, response);
-//    }
-//  }
-
-  public AuthManager(AuthConfiguration authConfiguration, TokenFactory tokenFactory,
+  public AuthManager(AuthConfiguration authConfiguration, AuthTokenGenerate authTokenGenerate,
       AuthRealm authRealm) {
     this.authConfiguration = authConfiguration;
-    this.tokenFactory = tokenFactory;
+    this.authTokenGenerate = authTokenGenerate;
     this.authRealm = authRealm;
   }
 
@@ -72,7 +53,7 @@ public class AuthManager {
       String auth = handlerHelper.getAuth();
       String authenticate = handler.authenticate(request, response, authConfiguration.getHeader());
       if (handler.isDecodeToken()) {
-        tokenFactory.decode(authenticate);
+        authTokenGenerate.decode(authenticate);
       }
       if (handler.isRefreshToken()) {
         Object subject = SubjectManager.getSubject();
@@ -118,7 +99,7 @@ public class AuthManager {
   public void loginSuccess(Object obj, long expire) {
     HttpServletResponse response = SubjectManager.getResponse();
     response.setHeader(authConfiguration.getHeader(),
-        tokenFactory.create(JacksonUtils.toJSONString(obj), expire));
+        authTokenGenerate.create(JacksonUtils.toJSONString(obj), expire));
     response.setHeader("Access-Control-Expose-Headers", authConfiguration.getHeader());
   }
 
@@ -129,7 +110,7 @@ public class AuthManager {
       for (RequestVerification requestVerification : requestVerificationSet) {
         Set<String> patterns = requestVerification.getPatterns();
         String auth = requestVerification.getAuth();
-        if (CollectionUtils.isNotBlank(patterns) && StringUtils.isNotBlank(auth)) {
+        if (CollectionUtils.isNotBlank(patterns) && !Strings.isNullOrEmpty(auth)) {
           requestVerification.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
           authSet.add(requestVerification);
         } else {

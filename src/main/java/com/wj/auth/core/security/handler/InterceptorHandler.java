@@ -1,4 +1,4 @@
-package com.wj.auth.handler;
+package com.wj.auth.core.security.handler;
 
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package com.wj.auth.handler;
+package com.wj.auth.core.security.handler;
 
 import com.wj.auth.utils.CollectionUtils;
 import java.util.Set;
@@ -12,15 +12,17 @@ import javax.servlet.http.HttpServletResponse;
 public class AuthInterceptorHandler implements InterceptorHandler {
 
   @Override
-  public boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth, Set<String> userAuth) {
-    if(CollectionUtils.isBlank(userAuth)){
+  public boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth,
+      Set<String> userAuth) {
+    if (CollectionUtils.isBlank(userAuth)) {
       return false;
     }
     return userAuth.contains(auth);
   }
 
   @Override
-  public String authenticate(HttpServletRequest request, HttpServletResponse response, String header) {
+  public String authenticate(HttpServletRequest request, HttpServletResponse response,
+      String header) {
     return request.getHeader(header);
   }
 }

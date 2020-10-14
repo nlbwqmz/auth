@@ -16,6 +16,7 @@ public @interface Auth {
 
   /**
    * 权限
+   *
    * @return
    */
   @NonNull String value();

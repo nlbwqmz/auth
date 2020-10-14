@@ -1,13 +1,15 @@
-package com.wj.auth.common;
+package com.wj.auth.core.security.entity;
 
 import java.util.Set;
 
 /**
  * 请求验证
+ *
  * @author weijie
  * @since 2020/9/18
  */
 public class RequestVerification {
+
   private Set<String> patterns;
   private Set<String> methods;
   private String auth;

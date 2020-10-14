@@ -6,8 +6,8 @@ import com.wj.auth.exception.JsonException;
 
 /**
  * @author 魏杰
- * @since 2020/5/3
  * @Description:
+ * @since 2020/5/3
  */
 public class JacksonUtils {
 

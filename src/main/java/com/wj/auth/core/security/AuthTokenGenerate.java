@@ -1,4 +1,4 @@
-package com.wj.auth.core;
+package com.wj.auth.core.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
@@ -6,14 +6,15 @@ import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.wj.auth.common.AlgorithmEnum;
+import com.google.common.base.Strings;
 import com.wj.auth.common.AuthConfiguration;
-import com.wj.auth.common.Token;
+import com.wj.auth.common.SubjectManager;
+import com.wj.auth.core.security.entity.AlgorithmEnum;
+import com.wj.auth.core.security.entity.Token;
 import com.wj.auth.exception.CertificateException;
 import com.wj.auth.exception.CertificateNotFoundException;
 import com.wj.auth.exception.TokenFactoryInitException;
 import com.wj.auth.utils.JacksonUtils;
-import com.wj.auth.utils.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,7 +35,7 @@ import org.springframework.util.ResourceUtils;
  * @author weijie
  * @since 2020/6/12
  */
-public class TokenFactory {
+public class AuthTokenGenerate {
 
   /**
    * 公钥
@@ -69,21 +70,23 @@ public class TokenFactory {
     try {
       algorithmEnum = AlgorithmEnum.valueOf(token.getAlgorithm());
     } catch (IllegalArgumentException e) {
-      throw new TokenFactoryInitException(String.format("The algorithm %s is not supported", token.getAlgorithm()));
+      throw new TokenFactoryInitException(
+          String.format("The algorithm %s is not supported", token.getAlgorithm()));
     }
     switch (algorithmEnum) {
       case HMAC256:
         initHMAC256();
         break;
       case RSA:
-        if (StringUtils.isBlank(token.getKeystoreLocation())) {
+        if (Strings.isNullOrEmpty(token.getKeystoreLocation())) {
           validThisTimeInit();
         } else {
           initFromKeyStore();
         }
         break;
       default:
-        throw new TokenFactoryInitException(String.format("The algorithm %s is not supported", token.getAlgorithm()));
+        throw new TokenFactoryInitException(
+            String.format("The algorithm %s is not supported", token.getAlgorithm()));
     }
   }
 
@@ -95,7 +98,7 @@ public class TokenFactory {
       e.printStackTrace();
       throw new TokenFactoryInitException(e.getMessage());
     }
-    try(FileInputStream inputStream = new FileInputStream(file)){
+    try (FileInputStream inputStream = new FileInputStream(file)) {
       KeyStore keyStore = KeyStore.getInstance("JKS");
       keyStore.load(inputStream, token.getPassword().toCharArray());
       Enumeration aliasEnum = keyStore.aliases();
@@ -161,7 +164,7 @@ public class TokenFactory {
   }
 
   public void decode(String token) {
-    if (StringUtils.isBlank(token)) {
+    if (Strings.isNullOrEmpty(token)) {
       throw new CertificateNotFoundException();
     }
     DecodedJWT verify = verify(token);
@@ -174,10 +177,10 @@ public class TokenFactory {
     JWTVerifier verifier = JWT.require(algorithmObj)
         .withIssuer(token.getIssuer())
         .build();
-    try{
+    try {
       DecodedJWT decodedJWT = verifier.verify(authorization);
       return decodedJWT;
-    } catch (Exception e){
+    } catch (Exception e) {
       throw new CertificateException(e.getMessage());
     }
   }

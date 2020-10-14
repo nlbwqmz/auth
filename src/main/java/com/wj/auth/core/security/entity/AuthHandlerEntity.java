@@ -1,6 +1,6 @@
-package com.wj.auth.common;
+package com.wj.auth.core.security.entity;
 
-import com.wj.auth.handler.InterceptorHandler;
+import com.wj.auth.core.security.handler.InterceptorHandler;
 import java.util.Set;
 
 /**

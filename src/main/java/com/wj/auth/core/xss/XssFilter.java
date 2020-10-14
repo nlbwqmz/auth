@@ -1,4 +1,4 @@
-package com.wj.auth.xss;
+package com.wj.auth.core.xss;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -12,24 +12,28 @@ import java.util.Optional;
 import java.util.Set;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 
 /**
+ * 防xss攻击过滤器
+ *
  * @author weijie
  * @since 2020/10/13
  */
+@Order(2)
 @Component
-//@ConditionalOnProperty(prefix = "auth.xss", name = "enable", havingValue = "true")
+@WebFilter(filterName = "xssFilter", urlPatterns = "/*")
 public class XssFilter implements Filter {
 
   private final AuthConfiguration authConfiguration;
@@ -43,50 +47,45 @@ public class XssFilter implements Filter {
     this.authConfiguration = authConfiguration;
   }
 
-  @Override
-  public void init(FilterConfig filterConfig) throws ServletException {
-
-  }
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
-    HttpServletRequest req = (HttpServletRequest) request;
-    if (exclusions == null) {
-      Set<String> config = Optional.ofNullable(authConfiguration.getXss().getExclusions())
-          .orElse(Sets.newHashSet());
-      if (!Strings.isNullOrEmpty(contextPath)) {
-        exclusions = CollectionUtils.addUrlPrefix(config, contextPath);
-      } else {
-        exclusions = config;
+    if (authConfiguration.getXss().isQueryEnable()) {
+      HttpServletRequest req = (HttpServletRequest) request;
+      if (exclusions == null) {
+        Set<String> config = Optional.ofNullable(authConfiguration.getXss().getExclusions())
+            .orElse(Sets.newHashSet());
+        if (!Strings.isNullOrEmpty(contextPath)) {
+          exclusions = CollectionUtils.addUrlPrefix(config, contextPath);
+        } else {
+          exclusions = config;
+        }
       }
-    }
-    String uri = req.getRequestURI();
-    if (AuthUtils.matcher(exclusions, uri)) {
-      chain.doFilter(new XssAndSqlHttpServletRequestWrapper(req), response);
+      String uri = req.getRequestURI();
+      if (AuthUtils.matcher(exclusions, uri)) {
+        chain.doFilter(request, response);
+      } else {
+        chain.doFilter(new XssRequestWrapper(req), response);
+      }
     } else {
       chain.doFilter(request, response);
     }
   }
 
-  @Override
-  public void destroy() {
-
-  }
-
   /**
-   * 过滤json类型的
+   * 过滤body
    *
    * @param builder
    * @return
    */
   @Bean
   @Primary
-  @ConditionalOnProperty(prefix = "auth.xss", name = "bodyEnable", havingValue = "true")
+  @ConditionalOnProperty(prefix = "auth.xss", name = "body-enable", havingValue = "true")
   public ObjectMapper xssObjectMapper(Jackson2ObjectMapperBuilder builder) {
     ObjectMapper objectMapper = builder.createXmlMapper(false).build();
-    SimpleModule xssModule = new SimpleModule("XssStringJsonSerializer");
-    xssModule.addSerializer(new XssStringJsonSerializer());
+    SimpleModule xssModule = new SimpleModule("xssStringJsonSerializer");
+    xssModule.addSerializer(new XssSerializer());
     objectMapper.registerModule(xssModule);
     return objectMapper;
   }

@@ -1,4 +1,4 @@
-package com.wj.auth.common;
+package com.wj.auth.core.security.entity;
 
 /**
  * @author weijie

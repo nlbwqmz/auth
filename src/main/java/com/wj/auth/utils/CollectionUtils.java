@@ -1,5 +1,6 @@
 package com.wj.auth.utils;
 
+import com.google.common.base.Strings;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,8 +10,10 @@ import java.util.Set;
  * @since 2020/9/18
  */
 public class CollectionUtils {
+
   /**
    * 集合是否为空
+   *
    * @param collection
    * @return
    */
@@ -22,27 +25,27 @@ public class CollectionUtils {
     return !isBlank(collection);
   }
 
-  public static Set<String> addUrlPrefix(Set<String> set,String prefix){
-    if(StringUtils.isBlank(prefix)){
+  public static Set<String> addUrlPrefix(Set<String> set, String prefix) {
+    if (Strings.isNullOrEmpty(prefix)) {
       prefix = "";
     }
     Set<String> result = new HashSet<>();
-    for(String item:set){
-      if(item.startsWith("/")){
+    for (String item : set) {
+      if (item.startsWith("/")) {
         result.add(prefix + item);
-      }else{
-        result.add(prefix + "/" +item);
+      } else {
+        result.add(prefix + "/" + item);
       }
     }
     return result;
   }
 
-  public static boolean containsIgnoreCase(Collection<String> collection, String target){
-    if(isBlank(collection)){
+  public static boolean containsIgnoreCase(Collection<String> collection, String target) {
+    if (isBlank(collection)) {
       return false;
     }
-    for(String str:collection){
-      if(str.equalsIgnoreCase(target)){
+    for (String str : collection) {
+      if (str.equalsIgnoreCase(target)) {
         return true;
       }
     }
