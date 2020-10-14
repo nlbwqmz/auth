@@ -35,6 +35,9 @@ public class AuthConfiguration {
   @NestedConfigurationProperty
   private Xss xss = new Xss();
 
+  @NestedConfigurationProperty
+  private Cors cors = new Cors();
+
   public String getHeader() {
     return header;
   }
@@ -73,5 +76,13 @@ public class AuthConfiguration {
 
   public void setXss(Xss xss) {
     this.xss = xss;
+  }
+
+  public Cors getCors() {
+    return cors;
+  }
+
+  public void setCors(Cors cors) {
+    this.cors = cors;
   }
 }

@@ -43,7 +43,6 @@ public class AuthFilter implements Filter {
       httpServletRequest.setAttribute("authError", e);
       httpServletRequest.getRequestDispatcher("/auth/error").forward(request, response);
     } finally {
-      System.out.println("结束");
       SubjectManager.removeAll();
     }
   }

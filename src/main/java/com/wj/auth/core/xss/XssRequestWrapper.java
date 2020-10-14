@@ -32,7 +32,9 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
     }
     for (int i = 0; i < parameterValues.length; i++) {
       String value = parameterValues[i];
-      parameterValues[i] = HtmlEscapers.htmlEscaper().escape(value);
+      if (!Strings.isNullOrEmpty(value)) {
+        parameterValues[i] = HtmlEscapers.htmlEscaper().escape(value);
+      }
     }
     return parameterValues;
   }

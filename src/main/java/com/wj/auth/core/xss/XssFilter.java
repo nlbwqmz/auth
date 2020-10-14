@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.wj.auth.common.AuthConfiguration;
+import com.wj.auth.common.Cors;
 import com.wj.auth.utils.AuthUtils;
 import com.wj.auth.utils.CollectionUtils;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -51,8 +53,21 @@ public class XssFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
+    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+    Cors cors = authConfiguration.getCors();
+    if (cors.isEnabled()) {
+      httpServletResponse
+          .setHeader("Access-Control-Allow-Origin", cors.getAccessControlAllowOrigin());
+      httpServletResponse
+          .setHeader("Access-Control-Allow-Headers", cors.getAccessControlAllowHeaders());
+      httpServletResponse
+          .setHeader("Access-Control-Allow-Methods", cors.getAccessControlAllowMethods());
+      httpServletResponse
+          .setHeader("Access-Control-Allow-Credentials", cors.getAccessControlAllowCredentials());
+      httpServletResponse.setHeader("Access-Control-Max-Age", cors.getAccessControlMaxAge());
+    }
     if (authConfiguration.getXss().isQueryEnable()) {
-      HttpServletRequest req = (HttpServletRequest) request;
+      HttpServletRequest httpServletRequest = (HttpServletRequest) request;
       if (exclusions == null) {
         Set<String> config = Optional.ofNullable(authConfiguration.getXss().getExclusions())
             .orElse(Sets.newHashSet());
@@ -62,14 +77,14 @@ public class XssFilter implements Filter {
           exclusions = config;
         }
       }
-      String uri = req.getRequestURI();
+      String uri = httpServletRequest.getRequestURI();
       if (AuthUtils.matcher(exclusions, uri)) {
-        chain.doFilter(request, response);
+        chain.doFilter(request, httpServletResponse);
       } else {
-        chain.doFilter(new XssRequestWrapper(req), response);
+        chain.doFilter(new XssRequestWrapper(httpServletRequest), httpServletResponse);
       }
     } else {
-      chain.doFilter(request, response);
+      chain.doFilter(request, httpServletResponse);
     }
   }
 
