@@ -7,7 +7,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.base.Strings;
-import com.wj.auth.common.AuthConfiguration;
+import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.SubjectManager;
 import com.wj.auth.core.security.entity.AlgorithmEnum;
 import com.wj.auth.core.security.entity.Token;
@@ -29,12 +29,14 @@ import java.util.Date;
 import java.util.Enumeration;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.util.ResourceUtils;
 
 /**
  * @author weijie
  * @since 2020/6/12
  */
+@ConditionalOnBean(AuthRealm.class)
 public class AuthTokenGenerate {
 
   /**
@@ -59,13 +61,13 @@ public class AuthTokenGenerate {
   private String expireClaim = "expire";
 
   @Autowired
-  private AuthConfiguration authConfiguration;
+  private AuthAutoConfiguration authAutoConfiguration;
 
   private Token token;
 
   @PostConstruct
   public void init() {
-    token = authConfiguration.getToken();
+    token = authAutoConfiguration.getToken();
     AlgorithmEnum algorithmEnum;
     try {
       algorithmEnum = AlgorithmEnum.valueOf(token.getAlgorithm());

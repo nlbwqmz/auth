@@ -3,7 +3,7 @@ package com.wj.auth.core.security;
 import com.google.common.base.Strings;
 import com.wj.auth.annotation.Anon;
 import com.wj.auth.annotation.Auth;
-import com.wj.auth.common.AuthConfiguration;
+import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.ErrorController;
 import com.wj.auth.core.security.entity.RequestVerification;
 import com.wj.auth.exception.AuthException;
@@ -12,6 +12,8 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -34,15 +36,16 @@ public class AuthRunner implements ApplicationRunner {
 
   private final AuthManager authManager;
   private final RequestMappingHandlerMapping mapping;
-  private final AuthConfiguration authConfiguration;
+  private final AuthAutoConfiguration authAutoConfiguration;
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
-  public AuthRunner(AuthManager authManager, RequestMappingHandlerMapping mapping,
-      AuthConfiguration authConfiguration) {
+  public AuthRunner(@Autowired(required = false) AuthManager authManager,
+      RequestMappingHandlerMapping mapping,
+      AuthAutoConfiguration authAutoConfiguration) {
     this.authManager = authManager;
     this.mapping = mapping;
-    this.authConfiguration = authConfiguration;
+    this.authAutoConfiguration = authAutoConfiguration;
   }
 
   @Override
@@ -61,14 +64,14 @@ public class AuthRunner implements ApplicationRunner {
         methods.forEach(item -> methodResult.add(item.name()));
       }
       patternResult = CollectionUtils.addUrlPrefix(patterns, contextPath);
-      if (authConfiguration.isAnnotationEnabled()) {
+      if (authAutoConfiguration.isAnnotationEnabled()) {
         Auth auth = method.getAnnotation(Auth.class);
         Anon anon = method.getAnnotation(Anon.class);
         if (auth != null) {
           if (!Strings.isNullOrEmpty(auth.value())) {
             authSet.add(new RequestVerification(patternResult, methodResult, auth.value()));
           } else {
-            throw new AuthException(String.format("at %s@%s, annotation Auth value can't be blank",
+            throw new AuthException(String.format("at %s.%s, annotation Auth value can't be blank",
                 method.getDeclaringClass().toString(), method.getName()));
           }
           return;

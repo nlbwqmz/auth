@@ -1,6 +1,7 @@
 package com.wj.auth.core.security.entity;
 
 /**
+ * token所支持的算法
  * @author weijie
  * @since 2020/9/15
  */

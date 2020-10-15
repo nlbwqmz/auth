@@ -1,6 +1,7 @@
 package com.wj.auth.common;
 
 /**
+ * 跨域配置
  * @Author 魏杰
  * @since 2020/10/15
  */

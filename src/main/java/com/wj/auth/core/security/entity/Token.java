@@ -1,6 +1,7 @@
 package com.wj.auth.core.security.entity;
 
 /**
+ * token配置
  * @author weijie
  * @since 2020/9/27
  */
@@ -13,7 +14,7 @@ public class Token {
   /**
    * 密码
    */
-  private String password = "com.github.nlbwqmz";
+  private String password = "nlbwqmz.github.io";
   /**
    * 证书地址
    */
@@ -21,7 +22,7 @@ public class Token {
   /**
    * 发行人
    */
-  private String issuer = "com.github.nlbwqmz";
+  private String issuer = "nlbwqmz.github.io";
 
   public String getAlgorithm() {
     return algorithm;

@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.wj.auth.core.security.AuthRunner,com.wj.auth.common.AuthConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.wj.auth.common.AuthAutoConfiguration
