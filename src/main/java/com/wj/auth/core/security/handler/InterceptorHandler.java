@@ -1,5 +1,6 @@
 package com.wj.auth.core.security.handler;
 
+import com.wj.auth.common.Logical;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,7 +17,8 @@ public interface InterceptorHandler {
    *
    * @return
    */
-  boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth,
+  boolean authorize(HttpServletRequest request, HttpServletResponse response, String[] auth,
+      Logical logical,
       @Nullable Set<String> userAuth);
 
   /**

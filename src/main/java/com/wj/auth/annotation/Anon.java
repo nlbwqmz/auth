@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * @author weijie
  * @since 2020/9/11
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Anon {
 

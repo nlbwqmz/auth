@@ -1,5 +1,6 @@
 package com.wj.auth.core.security.entity;
 
+import com.wj.auth.common.Logical;
 import java.util.Set;
 
 /**
@@ -12,7 +13,8 @@ public class RequestVerification {
 
   private Set<String> patterns;
   private Set<String> methods;
-  private String auth;
+  private String[] auth;
+  private Logical logical;
 
   public RequestVerification() {
   }
@@ -26,10 +28,12 @@ public class RequestVerification {
     this.methods = methods;
   }
 
-  public RequestVerification(Set<String> patterns, Set<String> methods, String auth) {
+  public RequestVerification(Set<String> patterns, Set<String> methods, String[] auth,
+      Logical logical) {
     this.patterns = patterns;
     this.methods = methods;
     this.auth = auth;
+    this.logical = logical;
   }
 
   public Set<String> getPatterns() {
@@ -48,11 +52,19 @@ public class RequestVerification {
     this.methods = methods;
   }
 
-  public String getAuth() {
+  public String[] getAuth() {
     return auth;
   }
 
-  public void setAuth(String auth) {
+  public void setAuth(String[] auth) {
     this.auth = auth;
+  }
+
+  public Logical getLogical() {
+    return logical;
+  }
+
+  public void setLogical(Logical logical) {
+    this.logical = logical;
   }
 }

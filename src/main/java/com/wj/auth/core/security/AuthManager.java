@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.Cors;
+import com.wj.auth.common.Logical;
 import com.wj.auth.common.SubjectManager;
 import com.wj.auth.core.security.entity.AuthHandlerEntity;
 import com.wj.auth.core.security.entity.RequestVerification;
@@ -14,6 +15,7 @@ import com.wj.auth.core.security.handler.InterceptorHandler;
 import com.wj.auth.core.xss.XssRequestWrapper;
 import com.wj.auth.exception.AuthException;
 import com.wj.auth.exception.PermissionNotFoundException;
+import com.wj.auth.utils.ArrayUtils;
 import com.wj.auth.utils.AuthUtils;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.JacksonUtils;
@@ -29,7 +31,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 
@@ -62,7 +63,7 @@ public class AuthManager {
     SubjectManager.setRequest(request);
     SubjectManager.setResponse(response);
     if (doHandler(request, response)) {
-      chain.doFilter(doXss(request),response);
+      chain.doFilter(doXss(request), response);
     } else {
       throw new AuthException("Unknown exception");
     }
@@ -72,8 +73,9 @@ public class AuthManager {
     HandlerHelper handlerHelper = getAuthHandler(request);
     if (handlerHelper != null) {
       InterceptorHandler handler = handlerHelper.getHandler();
-      String auth = handlerHelper.getAuth();
-      String authenticate = handler.authenticate(request, response, authAutoConfiguration.getHeader());
+      String[] auth = handlerHelper.getAuth();
+      String authenticate = handler
+          .authenticate(request, response, authAutoConfiguration.getHeader());
       if (handler.isDecodeToken()) {
         authTokenGenerate.decode(authenticate);
       }
@@ -82,10 +84,13 @@ public class AuthManager {
         long expire = SubjectManager.getExpire();
         loginSuccess(subject, expire);
       }
-      if (handler.authorize(request, response, auth, authRealm.doAuthorization())) {
+      if (handler.authorize(request, response, auth, handlerHelper.getLogical(),
+          authRealm.doAuthorization())) {
         return true;
       } else {
-        throw new PermissionNotFoundException(String.format("%s permission required", auth));
+        throw new PermissionNotFoundException(
+            String.format("%s permission required, logical is %s.", ArrayUtils.format(auth),
+                handlerHelper.getLogical().name()));
       }
     } else {
       return true;
@@ -138,11 +143,12 @@ public class AuthManager {
             .orElse(new HashSet<>());
         if (AuthUtils.matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || CollectionUtils
             .containsIgnoreCase(methods, method))) {
-          return new HandlerHelper(requestVerification.getAuth(), authHandlerEntity.getHandler());
+          return new HandlerHelper(requestVerification.getAuth(), requestVerification.getLogical(),
+              authHandlerEntity.getHandler());
         }
       }
     }
-    if(authAutoConfiguration.isStrict()){
+    if (authAutoConfiguration.isStrict()) {
       return new HandlerHelper(new AuthcInterceptorHandler());
     } else {
       return null;
@@ -168,8 +174,8 @@ public class AuthManager {
     if (CollectionUtils.isNotBlank(requestVerificationSet)) {
       for (RequestVerification requestVerification : requestVerificationSet) {
         Set<String> patterns = requestVerification.getPatterns();
-        String auth = requestVerification.getAuth();
-        if (CollectionUtils.isNotBlank(patterns) && !Strings.isNullOrEmpty(auth)) {
+        String[] auth = requestVerification.getAuth();
+        if (CollectionUtils.isNotBlank(patterns) && ArrayUtils.isAllNotBlank(auth)) {
           requestVerification.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
           authSet.add(requestVerification);
         } else {
@@ -226,23 +232,34 @@ public class AuthManager {
 
   private static class HandlerHelper {
 
-    private String auth;
+    private String[] auth;
+    private Logical logical;
     private InterceptorHandler handler;
 
     public HandlerHelper(InterceptorHandler handler) {
       this.handler = handler;
     }
-    public HandlerHelper(String auth, InterceptorHandler handler) {
+
+    public HandlerHelper(String[] auth, Logical logical, InterceptorHandler handler) {
       this.auth = auth;
+      this.logical = logical;
       this.handler = handler;
     }
 
-    public String getAuth() {
+    public String[] getAuth() {
       return auth;
     }
 
-    public void setAuth(String auth) {
+    public void setAuth(String[] auth) {
       this.auth = auth;
+    }
+
+    public Logical getLogical() {
+      return logical;
+    }
+
+    public void setLogical(Logical logical) {
+      this.logical = logical;
     }
 
     public InterceptorHandler getHandler() {

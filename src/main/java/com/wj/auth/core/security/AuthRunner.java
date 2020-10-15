@@ -1,19 +1,18 @@
 package com.wj.auth.core.security;
 
-import com.google.common.base.Strings;
 import com.wj.auth.annotation.Anon;
 import com.wj.auth.annotation.Auth;
 import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.ErrorController;
 import com.wj.auth.core.security.entity.RequestVerification;
 import com.wj.auth.exception.AuthException;
+import com.wj.auth.utils.ArrayUtils;
 import com.wj.auth.utils.CollectionUtils;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -67,16 +66,28 @@ public class AuthRunner implements ApplicationRunner {
       if (authAutoConfiguration.isAnnotationEnabled()) {
         Auth auth = method.getAnnotation(Auth.class);
         Anon anon = method.getAnnotation(Anon.class);
+        Class<?> declaringClass = method.getDeclaringClass();
         if (auth != null) {
-          if (!Strings.isNullOrEmpty(auth.value())) {
-            authSet.add(new RequestVerification(patternResult, methodResult, auth.value()));
+          String[] authValueArray = auth.value();
+          if (ArrayUtils.isAllNotBlank(authValueArray)) {
+            authSet.add(
+                new RequestVerification(patternResult, methodResult, auth.value(), auth.logical()));
           } else {
             throw new AuthException(String.format("at %s.%s, annotation Auth value can't be blank",
-                method.getDeclaringClass().toString(), method.getName()));
+                declaringClass.toString().substring(6), method.getName()));
           }
           return;
+        } else if (anon != null) {
+          anonSet.add(new RequestVerification(patternResult, methodResult));
+          return;
         }
-        if (anon != null) {
+        Auth declaredAuth = declaringClass.getAnnotation(Auth.class);
+        Anon declaredAnon = declaringClass.getAnnotation(Anon.class);
+        if (declaredAuth != null) {
+          authSet.add(new RequestVerification(patternResult, methodResult, declaredAuth.value(),
+              declaredAuth.logical()));
+          return;
+        } else if (declaredAnon != null) {
           anonSet.add(new RequestVerification(patternResult, methodResult));
           return;
         }

@@ -1,23 +1,26 @@
 package com.wj.auth.annotation;
 
+import com.wj.auth.common.Logical;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.springframework.lang.NonNull;
 
 /**
  * @author weijie
  * @since 2020/9/10
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Auth {
 
   /**
    * 权限
-   *
-   * @return
    */
-  @NonNull String value();
+  String[] value();
+
+  /**
+   * 多权限检查逻辑
+   */
+  Logical logical() default Logical.AND;
 }

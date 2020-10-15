@@ -1,5 +1,6 @@
 package com.wj.auth.core.security.handler;
 
+import com.wj.auth.common.Logical;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,7 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 public class AuthcInterceptorHandler implements InterceptorHandler {
 
   @Override
-  public boolean authorize(HttpServletRequest request, HttpServletResponse response, String auth,
+  public boolean authorize(HttpServletRequest request, HttpServletResponse response, String[] auth,
+      Logical logical,
       Set<String> userAuth) {
     return true;
   }
