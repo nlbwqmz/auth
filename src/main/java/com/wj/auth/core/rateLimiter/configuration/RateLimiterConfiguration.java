@@ -54,6 +54,10 @@ public class RateLimiterConfiguration {
     /**
      * IP：IP限流
      */
-    IP
+    IP,
+    /**
+     * 自定义
+     */
+    CUSTOM
   }
 }

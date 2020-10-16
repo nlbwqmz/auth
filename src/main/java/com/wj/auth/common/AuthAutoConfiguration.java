@@ -1,11 +1,10 @@
 package com.wj.auth.common;
 
+import com.wj.auth.core.Run;
 import com.wj.auth.core.cors.configuration.CorsConfiguration;
 import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration;
 import com.wj.auth.core.security.AuthRealm;
-import com.wj.auth.core.Run;
 import com.wj.auth.core.security.configuration.SecurityConfiguration;
-import com.wj.auth.core.security.configuration.TokenConfiguration;
 import com.wj.auth.core.xss.configuration.XssConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
