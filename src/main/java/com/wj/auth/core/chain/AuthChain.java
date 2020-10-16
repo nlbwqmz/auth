@@ -1,75 +1,64 @@
-package com.wj.auth.core.security;
+package com.wj.auth.core.chain;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 import com.wj.auth.common.AuthAutoConfiguration;
-import com.wj.auth.common.Cors;
-import com.wj.auth.common.Logical;
 import com.wj.auth.common.SubjectManager;
+import com.wj.auth.core.Login;
+import com.wj.auth.core.security.AuthRealm;
+import com.wj.auth.core.security.AuthTokenGenerate;
 import com.wj.auth.core.security.entity.AuthHandlerEntity;
+import com.wj.auth.core.security.entity.Logical;
 import com.wj.auth.core.security.entity.RequestVerification;
 import com.wj.auth.core.security.handler.AnonInterceptorHandler;
 import com.wj.auth.core.security.handler.AuthInterceptorHandler;
 import com.wj.auth.core.security.handler.AuthcInterceptorHandler;
 import com.wj.auth.core.security.handler.InterceptorHandler;
-import com.wj.auth.core.xss.XssRequestWrapper;
 import com.wj.auth.exception.AuthException;
 import com.wj.auth.exception.PermissionNotFoundException;
 import com.wj.auth.utils.ArrayUtils;
 import com.wj.auth.utils.AuthUtils;
 import com.wj.auth.utils.CollectionUtils;
-import com.wj.auth.utils.JacksonUtils;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 /**
  * @author weijie
- * @since 2020/9/10
+ * @since 2020/10/16
  */
-@ConditionalOnBean(AuthRealm.class)
-public class AuthManager {
+@Order(0)
+@Component
+public class AuthChain implements Chain {
 
   private final AuthAutoConfiguration authAutoConfiguration;
   private final AuthTokenGenerate authTokenGenerate;
   private final AuthRealm authRealm;
+  private final Login login;
   private List<AuthHandlerEntity> handlers = new ArrayList<>();
-  private Set<String> xssExclusions;
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
-  public AuthManager(AuthAutoConfiguration authAutoConfiguration,
+  public AuthChain(AuthAutoConfiguration authAutoConfiguration,
       AuthTokenGenerate authTokenGenerate,
-      AuthRealm authRealm) {
+      AuthRealm authRealm,
+      Login login) {
     this.authAutoConfiguration = authAutoConfiguration;
     this.authTokenGenerate = authTokenGenerate;
     this.authRealm = authRealm;
+    this.login = login;
   }
 
-  public void doAuth(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-      throws IOException, ServletException {
-    doCors(response);
-    SubjectManager.setRequest(request);
-    SubjectManager.setResponse(response);
-    if (doHandler(request, response)) {
-      chain.doFilter(doXss(request), response);
-    } else {
-      throw new AuthException("Unknown exception");
-    }
-  }
-
-  private boolean doHandler(HttpServletRequest request, HttpServletResponse response) {
+  @Override
+  public void doFilter(ChainManager chain) {
+    HttpServletRequest request = SubjectManager.getRequest();
+    HttpServletResponse response = SubjectManager.getResponse();
     HandlerHelper handlerHelper = getAuthHandler(request);
     if (handlerHelper != null) {
       InterceptorHandler handler = handlerHelper.getHandler();
@@ -82,53 +71,16 @@ public class AuthManager {
       if (handler.isRefreshToken()) {
         Object subject = SubjectManager.getSubject();
         long expire = SubjectManager.getExpire();
-        loginSuccess(subject, expire);
+        login.doLogin(subject, expire);
       }
-      if (handler.authorize(request, response, auth, handlerHelper.getLogical(),
+      if (!handler.authorize(request, response, auth, handlerHelper.getLogical(),
           authRealm.doAuthorization())) {
-        return true;
-      } else {
         throw new PermissionNotFoundException(
             String.format("%s permission required, logical is %s.", ArrayUtils.format(auth),
                 handlerHelper.getLogical().name()));
       }
-    } else {
-      return true;
     }
-  }
-
-  private ServletRequest doXss(HttpServletRequest request) {
-    if (authAutoConfiguration.getXss().isQueryEnable()) {
-      if (xssExclusions == null) {
-        Set<String> config = Optional.ofNullable(authAutoConfiguration.getXss().getExclusions())
-            .orElse(Sets.newHashSet());
-        if (!Strings.isNullOrEmpty(contextPath)) {
-          xssExclusions = CollectionUtils.addUrlPrefix(config, contextPath);
-        } else {
-          xssExclusions = config;
-        }
-      }
-      String uri = request.getRequestURI();
-      if (AuthUtils.matcher(xssExclusions, uri)) {
-        return request;
-      } else {
-        return new XssRequestWrapper(request);
-      }
-    } else {
-      return request;
-    }
-  }
-
-  private void doCors(HttpServletResponse response) {
-    Cors cors = authAutoConfiguration.getCors();
-    if (cors.isEnabled()) {
-      response.setHeader("Access-Control-Allow-Origin", cors.getAccessControlAllowOrigin());
-      response.setHeader("Access-Control-Allow-Headers", cors.getAccessControlAllowHeaders());
-      response.setHeader("Access-Control-Allow-Methods", cors.getAccessControlAllowMethods());
-      response.setHeader("Access-Control-Allow-Credentials",
-          String.valueOf(cors.getAccessControlAllowCredentials()));
-      response.setHeader("Access-Control-Max-Age", cors.getAccessControlMaxAge());
-    }
+    chain.doAuth();
   }
 
   private HandlerHelper getAuthHandler(HttpServletRequest request) {
@@ -155,21 +107,7 @@ public class AuthManager {
     }
   }
 
-
-  /**
-   * 登录成功
-   *
-   * @param obj
-   * @param expire
-   */
-  public void loginSuccess(Object obj, long expire) {
-    HttpServletResponse response = SubjectManager.getResponse();
-    response.setHeader(authAutoConfiguration.getHeader(),
-        authTokenGenerate.create(JacksonUtils.toJSONString(obj), expire));
-    response.setHeader("Access-Control-Expose-Headers", authAutoConfiguration.getHeader());
-  }
-
-  protected void setAuth(Set<RequestVerification> authSet) {
+  public void setAuth(Set<RequestVerification> authSet) {
     Set<RequestVerification> requestVerificationSet = authRealm.addAuthPatterns();
     if (CollectionUtils.isNotBlank(requestVerificationSet)) {
       for (RequestVerification requestVerification : requestVerificationSet) {
@@ -190,11 +128,10 @@ public class AuthManager {
     addHandler(new AuthHandlerEntity(authSet, new AuthInterceptorHandler(), 0));
   }
 
-  protected void setAnon(Set<RequestVerification> anonSet) {
+  public void setAnon(Set<RequestVerification> anonSet) {
     if (CollectionUtils.isNotBlank(authAutoConfiguration.getAnon())) {
-      anonSet.add(
-          new RequestVerification(
-              CollectionUtils.addUrlPrefix(authAutoConfiguration.getAnon(), contextPath)));
+      anonSet.add(RequestVerification.build()
+          .setPatterns(CollectionUtils.addUrlPrefix(authAutoConfiguration.getAnon(), contextPath)));
     }
     RequestVerification anonRequestVerification = authRealm.addAnonPatterns();
     if (anonRequestVerification != null) {
@@ -212,11 +149,11 @@ public class AuthManager {
     addHandler(new AuthHandlerEntity(anonSet, new AnonInterceptorHandler(), 100));
   }
 
-  protected void setAuthc(Set<RequestVerification> authcSet) {
+  public void setAuthc(Set<RequestVerification> authcSet) {
     addHandler(new AuthHandlerEntity(authcSet, new AuthcInterceptorHandler(), 200));
   }
 
-  protected void setCustomHandler() {
+  public void setCustomHandler() {
     Set<AuthHandlerEntity> customHandler = authRealm.addCustomHandler();
     if (CollectionUtils.isNotBlank(customHandler)) {
       for (AuthHandlerEntity authHandlerEntity : customHandler) {

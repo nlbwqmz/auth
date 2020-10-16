@@ -2,6 +2,7 @@ package com.wj.auth.utils;
 
 import java.util.Iterator;
 import java.util.Set;
+import org.springframework.lang.NonNull;
 import org.springframework.util.AntPathMatcher;
 
 /**
@@ -13,7 +14,7 @@ public class AuthUtils {
 
   private static AntPathMatcher antPathMatcher = new AntPathMatcher();
 
-  public static boolean matcher(Set<String> patterns, String uri) {
+  public static boolean matcher(@NonNull Set<String> patterns, String uri) {
     Iterator<String> iterator = patterns.iterator();
     while (iterator.hasNext()) {
       String pattern = iterator.next();

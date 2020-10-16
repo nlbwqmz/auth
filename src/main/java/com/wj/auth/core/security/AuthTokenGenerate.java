@@ -29,14 +29,14 @@ import java.util.Date;
 import java.util.Enumeration;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 /**
  * @author weijie
  * @since 2020/6/12
  */
-@ConditionalOnBean(AuthRealm.class)
+@Component
 public class AuthTokenGenerate {
 
   /**

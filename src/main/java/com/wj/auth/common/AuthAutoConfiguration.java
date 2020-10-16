@@ -1,7 +1,7 @@
 package com.wj.auth.common;
 
 import com.wj.auth.core.security.AuthRealm;
-import com.wj.auth.core.security.AuthRunner;
+import com.wj.auth.core.Run;
 import com.wj.auth.core.security.entity.Token;
 import com.wj.auth.core.xss.entity.Xss;
 import java.util.Set;
@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConfigurationProperties(AuthAutoConfiguration.AUTH_PREFIX)
-@Import(AuthRunner.class)
+@Import(Run.class)
 public class AuthAutoConfiguration {
 
   public final static String AUTH_PREFIX = "auth";

@@ -1,6 +1,5 @@
 package com.wj.auth.core.security.entity;
 
-import com.wj.auth.common.Logical;
 import java.util.Set;
 
 /**
@@ -14,57 +13,49 @@ public class RequestVerification {
   private Set<String> patterns;
   private Set<String> methods;
   private String[] auth;
-  private Logical logical;
+  private Logical logical = Logical.AND;
 
-  public RequestVerification() {
+  private RequestVerification() {
+
   }
 
-  public RequestVerification(Set<String> patterns) {
-    this.patterns = patterns;
-  }
-
-  public RequestVerification(Set<String> patterns, Set<String> methods) {
-    this.patterns = patterns;
-    this.methods = methods;
-  }
-
-  public RequestVerification(Set<String> patterns, Set<String> methods, String[] auth,
-      Logical logical) {
-    this.patterns = patterns;
-    this.methods = methods;
-    this.auth = auth;
-    this.logical = logical;
+  public static RequestVerification build() {
+    return new RequestVerification();
   }
 
   public Set<String> getPatterns() {
     return patterns;
   }
 
-  public void setPatterns(Set<String> patterns) {
+  public RequestVerification setPatterns(Set<String> patterns) {
     this.patterns = patterns;
+    return this;
   }
 
   public Set<String> getMethods() {
     return methods;
   }
 
-  public void setMethods(Set<String> methods) {
+  public RequestVerification setMethods(Set<String> methods) {
     this.methods = methods;
+    return this;
   }
 
   public String[] getAuth() {
     return auth;
   }
 
-  public void setAuth(String[] auth) {
+  public RequestVerification setAuth(String... auth) {
     this.auth = auth;
+    return this;
   }
 
   public Logical getLogical() {
     return logical;
   }
 
-  public void setLogical(Logical logical) {
+  public RequestVerification setLogical(Logical logical) {
     this.logical = logical;
+    return this;
   }
 }
