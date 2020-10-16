@@ -1,10 +1,12 @@
 package com.wj.auth.common;
 
+import com.wj.auth.core.cors.configuration.CorsConfiguration;
+import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration;
 import com.wj.auth.core.security.AuthRealm;
 import com.wj.auth.core.Run;
-import com.wj.auth.core.security.entity.Token;
-import com.wj.auth.core.xss.entity.Xss;
-import java.util.Set;
+import com.wj.auth.core.security.configuration.SecurityConfiguration;
+import com.wj.auth.core.security.configuration.TokenConfiguration;
+import com.wj.auth.core.xss.configuration.XssConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,38 +29,29 @@ public class AuthAutoConfiguration {
   public final static String AUTH_PREFIX = "auth";
   public final static String ERROR_ATTRIBUTE = "authError";
   private static Logger log = LoggerFactory.getLogger(AuthAutoConfiguration.class);
+
   /**
-   * Token头名称
-   */
-  private String header = "Authorization";
-  /**
-   * 免登录接口
-   */
-  private Set<String> anon;
-  /**
-   * 严格模式 true:所有请求都会被过滤，被springboot扫描到的请求按照设置过滤，未被扫描到的执行AuthcInterceptorHandler
-   * false:只有被springboot扫描到的请求会被过滤
-   */
-  private boolean strict = true;
-  /**
-   * 是否开启注解
-   */
-  private boolean annotationEnabled = true;
-  /**
-   * token配置
+   * 授权认证配置
    */
   @NestedConfigurationProperty
-  private Token token = new Token();
+  private SecurityConfiguration security = new SecurityConfiguration();
+
   /**
    * xss配置
    */
   @NestedConfigurationProperty
-  private Xss xss = new Xss();
+  private XssConfiguration xss = new XssConfiguration();
   /**
    * 跨域配置
    */
   @NestedConfigurationProperty
-  private Cors cors = new Cors();
+  private CorsConfiguration cors = new CorsConfiguration();
+
+  /**
+   * 限流配置
+   */
+  @NestedConfigurationProperty
+  private RateLimiterConfiguration rateLimiter = new RateLimiterConfiguration();
 
   public AuthAutoConfiguration(@Autowired(required = false) AuthRealm authRealm) {
     if (authRealm == null && log.isWarnEnabled()) {
@@ -66,59 +59,53 @@ public class AuthAutoConfiguration {
     }
   }
 
-  public String getHeader() {
-    return header;
+  public SecurityConfiguration getSecurity() {
+    return security;
   }
 
-  public void setHeader(String header) {
-    this.header = header;
+  public void setSecurity(
+      SecurityConfiguration security) {
+    this.security = security;
   }
 
-  public Set<String> getAnon() {
-    return anon;
+  public static String getAuthPrefix() {
+    return AUTH_PREFIX;
   }
 
-  public void setAnon(Set<String> anon) {
-    this.anon = anon;
+  public static String getErrorAttribute() {
+    return ERROR_ATTRIBUTE;
   }
 
-  public boolean isStrict() {
-    return strict;
+  public static Logger getLog() {
+    return log;
   }
 
-  public void setStrict(boolean strict) {
-    this.strict = strict;
+  public static void setLog(Logger log) {
+    AuthAutoConfiguration.log = log;
   }
 
-  public boolean isAnnotationEnabled() {
-    return annotationEnabled;
-  }
-
-  public void setAnnotationEnabled(boolean annotationEnabled) {
-    this.annotationEnabled = annotationEnabled;
-  }
-
-  public Token getToken() {
-    return token;
-  }
-
-  public void setToken(Token token) {
-    this.token = token;
-  }
-
-  public Xss getXss() {
+  public XssConfiguration getXss() {
     return xss;
   }
 
-  public void setXss(Xss xss) {
+  public void setXss(XssConfiguration xss) {
     this.xss = xss;
   }
 
-  public Cors getCors() {
+  public CorsConfiguration getCors() {
     return cors;
   }
 
-  public void setCors(Cors cors) {
+  public void setCors(CorsConfiguration cors) {
     this.cors = cors;
+  }
+
+  public RateLimiterConfiguration getRateLimiter() {
+    return rateLimiter;
+  }
+
+  public void setRateLimiter(
+      RateLimiterConfiguration rateLimiter) {
+    this.rateLimiter = rateLimiter;
   }
 }

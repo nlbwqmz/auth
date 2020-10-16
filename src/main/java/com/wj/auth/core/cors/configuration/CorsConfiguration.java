@@ -1,11 +1,11 @@
-package com.wj.auth.common;
+package com.wj.auth.core.cors.configuration;
 
 /**
  * 跨域配置
  * @Author 魏杰
  * @since 2020/10/15
  */
-public class Cors {
+public class CorsConfiguration {
 
   private boolean enabled = true;
   private String accessControlAllowOrigin = "*";

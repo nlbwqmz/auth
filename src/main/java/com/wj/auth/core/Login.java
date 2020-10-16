@@ -3,6 +3,7 @@ package com.wj.auth.core;
 import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.SubjectManager;
 import com.wj.auth.core.security.AuthTokenGenerate;
+import com.wj.auth.core.security.configuration.SecurityConfiguration;
 import com.wj.auth.utils.JacksonUtils;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -14,12 +15,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class Login {
 
-  private final AuthAutoConfiguration authAutoConfiguration;
+  private final SecurityConfiguration security;
   private final AuthTokenGenerate authTokenGenerate;
 
   public Login(AuthAutoConfiguration authAutoConfiguration,
       AuthTokenGenerate authTokenGenerate) {
-    this.authAutoConfiguration = authAutoConfiguration;
+    this.security = authAutoConfiguration.getSecurity();
     this.authTokenGenerate = authTokenGenerate;
   }
   /**
@@ -30,9 +31,9 @@ public class Login {
    */
   public void doLogin(Object obj, long expire) {
     HttpServletResponse response = SubjectManager.getResponse();
-    response.setHeader(authAutoConfiguration.getHeader(),
+    response.setHeader(security.getHeader(),
         authTokenGenerate.create(JacksonUtils.toJSONString(obj), expire));
-    response.setHeader("Access-Control-Expose-Headers", authAutoConfiguration.getHeader());
+    response.setHeader("Access-Control-Expose-Headers", security.getHeader());
   }
 
 }

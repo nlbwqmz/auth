@@ -10,7 +10,7 @@ import com.google.common.html.HtmlEscapers;
 import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.SubjectManager;
 import com.wj.auth.core.xss.XssRequestWrapper;
-import com.wj.auth.core.xss.entity.Xss;
+import com.wj.auth.core.xss.configuration.XssConfiguration;
 import com.wj.auth.utils.AuthUtils;
 import com.wj.auth.utils.CollectionUtils;
 import java.io.IOException;
@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  * @author weijie
  * @since 2020/10/16
  */
-@Order(2)
+@Order(3)
 @Component
 public class XssChain extends JsonSerializer<String> implements Chain{
 
@@ -45,12 +45,12 @@ public class XssChain extends JsonSerializer<String> implements Chain{
 
   @PostConstruct
   public void init() {
-    Xss xss = authAutoConfiguration.getXss();
-    Set<String> only = xss.getOnly();
+    XssConfiguration xssConfiguration = authAutoConfiguration.getXss();
+    Set<String> only = xssConfiguration.getOnly();
     if (CollectionUtils.isNotBlank(only)) {
       xssOnly = CollectionUtils.addUrlPrefix(only, contextPath);
     } else {
-      Set<String> exclusions = xss.getExclusions();
+      Set<String> exclusions = xssConfiguration.getExclusions();
       if (CollectionUtils.isNotBlank(exclusions)) {
         xssExclusions = CollectionUtils.addUrlPrefix(exclusions, contextPath);
       }
@@ -88,7 +88,7 @@ public class XssChain extends JsonSerializer<String> implements Chain{
   }
 
   /**
-   * body Xss 转义
+   * body XssConfiguration 转义
    */
   @Bean
   @Primary

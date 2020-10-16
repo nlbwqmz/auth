@@ -1,6 +1,6 @@
 package com.wj.auth.annotation;
 
-import com.wj.auth.core.security.entity.Logical;
+import com.wj.auth.core.security.configuration.Logical;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

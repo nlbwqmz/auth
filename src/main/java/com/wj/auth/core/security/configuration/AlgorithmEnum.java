@@ -1,4 +1,4 @@
-package com.wj.auth.core.security.entity;
+package com.wj.auth.core.security.configuration;
 
 /**
  * token所支持的算法

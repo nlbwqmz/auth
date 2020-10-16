@@ -1,6 +1,6 @@
 package com.wj.auth.core.security.handler;
 
-import com.wj.auth.core.security.entity.Logical;
+import com.wj.auth.core.security.configuration.Logical;
 import com.wj.auth.exception.AuthException;
 import com.wj.auth.utils.CollectionUtils;
 import java.util.Set;

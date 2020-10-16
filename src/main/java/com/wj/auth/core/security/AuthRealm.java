@@ -1,7 +1,7 @@
 package com.wj.auth.core.security;
 
-import com.wj.auth.core.security.entity.AuthHandlerEntity;
-import com.wj.auth.core.security.entity.RequestVerification;
+import com.wj.auth.core.security.configuration.AuthHandlerEntity;
+import com.wj.auth.core.security.configuration.RequestVerification;
 import java.util.Set;
 
 /**

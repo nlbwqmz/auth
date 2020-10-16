@@ -5,9 +5,10 @@ import com.wj.auth.common.SubjectManager;
 import com.wj.auth.core.Login;
 import com.wj.auth.core.security.AuthRealm;
 import com.wj.auth.core.security.AuthTokenGenerate;
-import com.wj.auth.core.security.entity.AuthHandlerEntity;
-import com.wj.auth.core.security.entity.Logical;
-import com.wj.auth.core.security.entity.RequestVerification;
+import com.wj.auth.core.security.configuration.AuthHandlerEntity;
+import com.wj.auth.core.security.configuration.Logical;
+import com.wj.auth.core.security.configuration.RequestVerification;
+import com.wj.auth.core.security.configuration.SecurityConfiguration;
 import com.wj.auth.core.security.handler.AnonInterceptorHandler;
 import com.wj.auth.core.security.handler.AuthInterceptorHandler;
 import com.wj.auth.core.security.handler.AuthcInterceptorHandler;
@@ -33,11 +34,11 @@ import org.springframework.stereotype.Component;
  * @author weijie
  * @since 2020/10/16
  */
-@Order(0)
+@Order(1)
 @Component
 public class AuthChain implements Chain {
 
-  private final AuthAutoConfiguration authAutoConfiguration;
+  private final SecurityConfiguration security;
   private final AuthTokenGenerate authTokenGenerate;
   private final AuthRealm authRealm;
   private final Login login;
@@ -49,7 +50,7 @@ public class AuthChain implements Chain {
       AuthTokenGenerate authTokenGenerate,
       AuthRealm authRealm,
       Login login) {
-    this.authAutoConfiguration = authAutoConfiguration;
+    this.security = authAutoConfiguration.getSecurity();
     this.authTokenGenerate = authTokenGenerate;
     this.authRealm = authRealm;
     this.login = login;
@@ -64,7 +65,7 @@ public class AuthChain implements Chain {
       InterceptorHandler handler = handlerHelper.getHandler();
       String[] auth = handlerHelper.getAuth();
       String authenticate = handler
-          .authenticate(request, response, authAutoConfiguration.getHeader());
+          .authenticate(request, response, security.getHeader());
       if (handler.isDecodeToken()) {
         authTokenGenerate.decode(authenticate);
       }
@@ -100,7 +101,7 @@ public class AuthChain implements Chain {
         }
       }
     }
-    if (authAutoConfiguration.isStrict()) {
+    if (security.isStrict()) {
       return new HandlerHelper(new AuthcInterceptorHandler());
     } else {
       return null;
@@ -129,9 +130,9 @@ public class AuthChain implements Chain {
   }
 
   public void setAnon(Set<RequestVerification> anonSet) {
-    if (CollectionUtils.isNotBlank(authAutoConfiguration.getAnon())) {
+    if (CollectionUtils.isNotBlank(security.getAnon())) {
       anonSet.add(RequestVerification.build()
-          .setPatterns(CollectionUtils.addUrlPrefix(authAutoConfiguration.getAnon(), contextPath)));
+          .setPatterns(CollectionUtils.addUrlPrefix(security.getAnon(), contextPath)));
     }
     RequestVerification anonRequestVerification = authRealm.addAnonPatterns();
     if (anonRequestVerification != null) {

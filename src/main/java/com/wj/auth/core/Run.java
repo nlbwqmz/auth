@@ -5,7 +5,8 @@ import com.wj.auth.annotation.Auth;
 import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.core.chain.AuthChain;
 import com.wj.auth.core.security.AuthRealm;
-import com.wj.auth.core.security.entity.RequestVerification;
+import com.wj.auth.core.security.configuration.RequestVerification;
+import com.wj.auth.core.security.configuration.SecurityConfiguration;
 import com.wj.auth.exception.AuthException;
 import com.wj.auth.utils.ArrayUtils;
 import com.wj.auth.utils.CollectionUtils;
@@ -29,13 +30,12 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @since 2020/9/14
  */
 @ConditionalOnBean(AuthRealm.class)
-//@Import({AuthChainManager.class, XssManager.class, AuthTokenGenerate.class, ErrorController.class})
 @ServletComponentScan("com.wj.auth")
 @ComponentScan("com.wj.auth")
 public class Run implements ApplicationRunner {
 
   private final RequestMappingHandlerMapping mapping;
-  private final AuthAutoConfiguration authAutoConfiguration;
+  private final SecurityConfiguration security;
   private final AuthChain authChain;
   @Value("${server.servlet.context-path:}")
   private String contextPath;
@@ -44,7 +44,7 @@ public class Run implements ApplicationRunner {
       AuthAutoConfiguration authAutoConfiguration,
       AuthChain authChain) {
     this.mapping = mapping;
-    this.authAutoConfiguration = authAutoConfiguration;
+    this.security = authAutoConfiguration.getSecurity();
     this.authChain = authChain;
   }
 
@@ -64,7 +64,7 @@ public class Run implements ApplicationRunner {
         methods.forEach(item -> methodResult.add(item.name()));
       }
       patternResult = CollectionUtils.addUrlPrefix(patterns, contextPath);
-      if (authAutoConfiguration.isAnnotationEnabled()) {
+      if (security.isAnnotationEnabled()) {
         Auth auth = method.getAnnotation(Auth.class);
         Anon anon = method.getAnnotation(Anon.class);
         Class<?> declaringClass = method.getDeclaringClass();

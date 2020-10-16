@@ -9,8 +9,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.base.Strings;
 import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.SubjectManager;
-import com.wj.auth.core.security.entity.AlgorithmEnum;
-import com.wj.auth.core.security.entity.Token;
+import com.wj.auth.core.security.configuration.AlgorithmEnum;
+import com.wj.auth.core.security.configuration.TokenConfiguration;
 import com.wj.auth.exception.CertificateException;
 import com.wj.auth.exception.CertificateNotFoundException;
 import com.wj.auth.exception.TokenFactoryInitException;
@@ -63,24 +63,24 @@ public class AuthTokenGenerate {
   @Autowired
   private AuthAutoConfiguration authAutoConfiguration;
 
-  private Token token;
+  private TokenConfiguration tokenConfiguration;
 
   @PostConstruct
   public void init() {
-    token = authAutoConfiguration.getToken();
+    tokenConfiguration = authAutoConfiguration.getSecurity().getToken();
     AlgorithmEnum algorithmEnum;
     try {
-      algorithmEnum = AlgorithmEnum.valueOf(token.getAlgorithm());
+      algorithmEnum = AlgorithmEnum.valueOf(tokenConfiguration.getAlgorithm());
     } catch (IllegalArgumentException e) {
       throw new TokenFactoryInitException(
-          String.format("The algorithm %s is not supported", token.getAlgorithm()));
+          String.format("The algorithm %s is not supported", tokenConfiguration.getAlgorithm()));
     }
     switch (algorithmEnum) {
       case HMAC256:
         initHMAC256();
         break;
       case RSA:
-        if (Strings.isNullOrEmpty(token.getKeystoreLocation())) {
+        if (Strings.isNullOrEmpty(tokenConfiguration.getKeystoreLocation())) {
           validThisTimeInit();
         } else {
           initFromKeyStore();
@@ -88,21 +88,21 @@ public class AuthTokenGenerate {
         break;
       default:
         throw new TokenFactoryInitException(
-            String.format("The algorithm %s is not supported", token.getAlgorithm()));
+            String.format("The algorithm %s is not supported", tokenConfiguration.getAlgorithm()));
     }
   }
 
   private void initFromKeyStore() {
     File file = null;
     try {
-      file = ResourceUtils.getFile(token.getKeystoreLocation());
+      file = ResourceUtils.getFile(tokenConfiguration.getKeystoreLocation());
     } catch (FileNotFoundException e) {
       e.printStackTrace();
       throw new TokenFactoryInitException(e.getMessage());
     }
     try (FileInputStream inputStream = new FileInputStream(file)) {
       KeyStore keyStore = KeyStore.getInstance("JKS");
-      keyStore.load(inputStream, token.getPassword().toCharArray());
+      keyStore.load(inputStream, tokenConfiguration.getPassword().toCharArray());
       Enumeration aliasEnum = keyStore.aliases();
       String keyAlias = "";
       while (aliasEnum.hasMoreElements()) {
@@ -112,7 +112,7 @@ public class AuthTokenGenerate {
 
       publicKey = (RSAPublicKey) ce.getPublicKey();
       privateKey = (RSAPrivateKey) ((KeyStore.PrivateKeyEntry) keyStore.getEntry(keyAlias,
-          new KeyStore.PasswordProtection(token.getPassword().toCharArray())))
+          new KeyStore.PasswordProtection(tokenConfiguration.getPassword().toCharArray())))
           .getPrivateKey();
       algorithmObj = Algorithm.RSA256(publicKey, privateKey);
     } catch (Exception e) {
@@ -127,7 +127,7 @@ public class AuthTokenGenerate {
   private void validThisTimeInit() {
     KeyPairGenerator keyPairGen = null;
     try {
-      keyPairGen = KeyPairGenerator.getInstance(token.getAlgorithm());
+      keyPairGen = KeyPairGenerator.getInstance(tokenConfiguration.getAlgorithm());
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
       throw new TokenFactoryInitException();
@@ -140,12 +140,12 @@ public class AuthTokenGenerate {
   }
 
   private void initHMAC256() {
-    algorithmObj = Algorithm.HMAC256(token.getPassword());
+    algorithmObj = Algorithm.HMAC256(tokenConfiguration.getPassword());
   }
 
   private JWTCreator.Builder builder(Object obj, long expire) {
     return JWT.create()
-        .withIssuer(token.getIssuer())
+        .withIssuer(tokenConfiguration.getIssuer())
         .withIssuedAt(new Date())
         .withClaim(subjectClaim, JacksonUtils.toJSONString(obj))
         .withClaim(expireClaim, expire);
@@ -177,7 +177,7 @@ public class AuthTokenGenerate {
 
   public DecodedJWT verify(String authorization) {
     JWTVerifier verifier = JWT.require(algorithmObj)
-        .withIssuer(token.getIssuer())
+        .withIssuer(tokenConfiguration.getIssuer())
         .build();
     try {
       DecodedJWT decodedJWT = verifier.verify(authorization);

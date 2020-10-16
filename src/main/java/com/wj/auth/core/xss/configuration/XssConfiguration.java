@@ -1,4 +1,4 @@
-package com.wj.auth.core.xss.entity;
+package com.wj.auth.core.xss.configuration;
 
 import java.util.Set;
 
@@ -6,7 +6,7 @@ import java.util.Set;
  * @author 魏杰
  * @since 2020/10/13
  */
-public class Xss {
+public class XssConfiguration {
 
   /**
    * 开启query过滤

@@ -1,11 +1,11 @@
-package com.wj.auth.core.security.entity;
+package com.wj.auth.core.security.configuration;
 
 /**
  * token配置
  * @author weijie
  * @since 2020/9/27
  */
-public class Token {
+public class TokenConfiguration {
 
   /**
    * 加密方法
