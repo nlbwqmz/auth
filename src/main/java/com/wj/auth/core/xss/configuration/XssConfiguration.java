@@ -17,10 +17,9 @@ public class XssConfiguration {
    */
   private boolean bodyEnable;
   /**
-   * 若only为空，则exclusions中包含的路由不进行XSS过滤，其他路由正常过滤
-   * 若only不为空，则exclusions失效
+   * 若only为空，则exclusions中包含的路由不进行XSS过滤，其他路由正常过滤 若only不为空，则exclusions失效
    */
-  private Set<String> exclusions;
+  private Set<String> ignored;
 
   /**
    * 若only不为空，则只有only中所包含的路由才进行XSS过滤，exclusions将失效
@@ -43,12 +42,12 @@ public class XssConfiguration {
     this.bodyEnable = bodyEnable;
   }
 
-  public Set<String> getExclusions() {
-    return exclusions;
+  public Set<String> getIgnored() {
+    return ignored;
   }
 
-  public void setExclusions(Set<String> exclusions) {
-    this.exclusions = exclusions;
+  public void setIgnored(Set<String> ignored) {
+    this.ignored = ignored;
   }
 
   public Set<String> getOnly() {

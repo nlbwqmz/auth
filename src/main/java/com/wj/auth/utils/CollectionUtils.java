@@ -1,8 +1,8 @@
 package com.wj.auth.utils;
 
-import com.google.common.base.Strings;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -26,9 +26,7 @@ public class CollectionUtils {
   }
 
   public static Set<String> addUrlPrefix(Set<String> set, String prefix) {
-    if (Strings.isNullOrEmpty(prefix)) {
-      prefix = "";
-    }
+    prefix = Optional.ofNullable(prefix).orElse("");
     Set<String> result = new HashSet<>();
     for (String item : set) {
       if (item.startsWith("/")) {

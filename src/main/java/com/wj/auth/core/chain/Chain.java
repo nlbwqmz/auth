@@ -6,6 +6,11 @@ package com.wj.auth.core.chain;
  */
 public interface Chain {
 
+  /**
+   * 过滤
+   *
+   * @param chain 过滤链
+   */
   void doFilter(ChainManager chain);
 
 }

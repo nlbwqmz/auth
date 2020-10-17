@@ -1,5 +1,7 @@
 package com.wj.auth.core.rateLimiter.configuration;
 
+import java.util.Set;
+
 /**
  * 限流配置
  *
@@ -16,6 +18,16 @@ public class RateLimiterConfiguration {
    * 阈值
    */
   private double threshold = 5;
+
+  /**
+   * 忽略
+   */
+  private Set<String> ignored;
+
+  /**
+   * 只有这些接口才限流
+   */
+  private Set<String> only;
 
   /**
    * 策略
@@ -44,6 +56,22 @@ public class RateLimiterConfiguration {
 
   public void setStrategy(Strategy strategy) {
     this.strategy = strategy;
+  }
+
+  public Set<String> getIgnored() {
+    return ignored;
+  }
+
+  public void setIgnored(Set<String> ignored) {
+    this.ignored = ignored;
+  }
+
+  public Set<String> getOnly() {
+    return only;
+  }
+
+  public void setOnly(Set<String> only) {
+    this.only = only;
   }
 
   public enum Strategy {

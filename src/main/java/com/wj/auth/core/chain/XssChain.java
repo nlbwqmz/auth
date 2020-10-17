@@ -31,10 +31,10 @@ import org.springframework.stereotype.Component;
  */
 @Order(3)
 @Component
-public class XssChain extends JsonSerializer<String> implements Chain{
+public class XssChain extends JsonSerializer<String> implements Chain {
 
   private final AuthAutoConfiguration authAutoConfiguration;
-  private Set<String> xssExclusions = Sets.newHashSet();
+  private Set<String> xssIgnored = Sets.newHashSet();
   private Set<String> xssOnly = Sets.newHashSet();
   @Value("${server.servlet.context-path:}")
   private String contextPath;
@@ -50,12 +50,13 @@ public class XssChain extends JsonSerializer<String> implements Chain{
     if (CollectionUtils.isNotBlank(only)) {
       xssOnly = CollectionUtils.addUrlPrefix(only, contextPath);
     } else {
-      Set<String> exclusions = xssConfiguration.getExclusions();
-      if (CollectionUtils.isNotBlank(exclusions)) {
-        xssExclusions = CollectionUtils.addUrlPrefix(exclusions, contextPath);
+      Set<String> ignored = xssConfiguration.getIgnored();
+      if (CollectionUtils.isNotBlank(ignored)) {
+        xssIgnored = CollectionUtils.addUrlPrefix(ignored, contextPath);
       }
     }
   }
+
   @Override
   public void doFilter(ChainManager chain) {
     HttpServletRequest request = SubjectManager.getRequest();
@@ -64,6 +65,7 @@ public class XssChain extends JsonSerializer<String> implements Chain{
     }
     chain.doAuth();
   }
+
   @Override
   public Class<String> handledType() {
     return String.class;
@@ -84,7 +86,7 @@ public class XssChain extends JsonSerializer<String> implements Chain{
   private boolean isDoXss(String uri) {
     return authAutoConfiguration.getXss().isQueryEnable() && (
         (CollectionUtils.isNotBlank(xssOnly) && AuthUtils.matcher(xssOnly, uri))
-            || (CollectionUtils.isBlank(xssOnly) && !AuthUtils.matcher(xssExclusions, uri)));
+            || (CollectionUtils.isBlank(xssOnly) && !AuthUtils.matcher(xssIgnored, uri)));
   }
 
   /**

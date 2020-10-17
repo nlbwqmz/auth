@@ -2,7 +2,7 @@ package com.wj.auth.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wj.auth.exception.JsonException;
+import com.wj.auth.exception.security.JsonException;
 
 /**
  * @author 魏杰

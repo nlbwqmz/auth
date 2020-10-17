@@ -2,12 +2,16 @@ package com.wj.auth.common;
 
 import com.wj.auth.core.Run;
 import com.wj.auth.core.cors.configuration.CorsConfiguration;
+import com.wj.auth.core.rateLimiter.RateLimiterCondition;
 import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration;
+import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration.Strategy;
 import com.wj.auth.core.security.AuthRealm;
 import com.wj.auth.core.security.configuration.SecurityConfiguration;
 import com.wj.auth.core.xss.configuration.XssConfiguration;
+import com.wj.auth.exception.rate.RateLimiterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -23,7 +27,7 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @ConfigurationProperties(AuthAutoConfiguration.AUTH_PREFIX)
 @Import(Run.class)
-public class AuthAutoConfiguration {
+public class AuthAutoConfiguration implements InitializingBean {
 
   public final static String AUTH_PREFIX = "auth";
   public final static String ERROR_ATTRIBUTE = "authError";
@@ -52,9 +56,31 @@ public class AuthAutoConfiguration {
   @NestedConfigurationProperty
   private RateLimiterConfiguration rateLimiter = new RateLimiterConfiguration();
 
-  public AuthAutoConfiguration(@Autowired(required = false) AuthRealm authRealm) {
+  private final RateLimiterCondition rateLimiterCondition;
+
+  public AuthAutoConfiguration(@Autowired(required = false) AuthRealm authRealm,
+      @Autowired(required = false) RateLimiterCondition rateLimiterCondition) {
     if (authRealm == null && log.isWarnEnabled()) {
       log.warn("auth cannot be turned on, because AuthRealm is required.");
+    }
+    this.rateLimiterCondition = rateLimiterCondition;
+  }
+
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    checkRateLimiterConfiguration();
+  }
+
+  private void checkRateLimiterConfiguration() {
+    if (rateLimiter.isEnabled()) {
+      if (rateLimiter.getThreshold() < 1) {
+        throw new RateLimiterException(
+            "The minimum rate limit threshold is 1, and the default is 5");
+      }
+      if (rateLimiter.getStrategy() == Strategy.CUSTOM && rateLimiterCondition == null) {
+        throw new RateLimiterException(
+            "rate limiter strategy is CUSTOM,so bean RateLimiterCondition is required.");
+      }
     }
   }
 

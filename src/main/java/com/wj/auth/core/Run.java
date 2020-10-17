@@ -3,11 +3,11 @@ package com.wj.auth.core;
 import com.wj.auth.annotation.Anon;
 import com.wj.auth.annotation.Auth;
 import com.wj.auth.common.AuthAutoConfiguration;
-import com.wj.auth.core.chain.AuthChain;
+import com.wj.auth.core.chain.SecurityChain;
 import com.wj.auth.core.security.AuthRealm;
 import com.wj.auth.core.security.configuration.RequestVerification;
 import com.wj.auth.core.security.configuration.SecurityConfiguration;
-import com.wj.auth.exception.AuthException;
+import com.wj.auth.exception.AuthInitException;
 import com.wj.auth.utils.ArrayUtils;
 import com.wj.auth.utils.CollectionUtils;
 import java.lang.reflect.Method;
@@ -36,16 +36,16 @@ public class Run implements ApplicationRunner {
 
   private final RequestMappingHandlerMapping mapping;
   private final SecurityConfiguration security;
-  private final AuthChain authChain;
+  private final SecurityChain securityChain;
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
   public Run(RequestMappingHandlerMapping mapping,
       AuthAutoConfiguration authAutoConfiguration,
-      AuthChain authChain) {
+      SecurityChain securityChain) {
     this.mapping = mapping;
     this.security = authAutoConfiguration.getSecurity();
-    this.authChain = authChain;
+    this.securityChain = securityChain;
   }
 
   @Override
@@ -78,8 +78,9 @@ public class Run implements ApplicationRunner {
                     .setAuth(auth.value())
                     .setLogical(auth.logical()));
           } else {
-            throw new AuthException(String.format("at %s.%s, annotation Auth value can't be blank",
-                declaringClass.toString().substring(6), method.getName()));
+            throw new AuthInitException(
+                String.format("at %s.%s, annotation Auth value can't be blank",
+                    declaringClass.toString().substring(6), method.getName()));
           }
           return;
         } else if (anon != null) {
@@ -104,9 +105,9 @@ public class Run implements ApplicationRunner {
       }
       authcSet.add(RequestVerification.build().setPatterns(patternResult).setMethods(methodResult));
     });
-    authChain.setAuth(authSet);
-    authChain.setAnon(anonSet);
-    authChain.setAuthc(authcSet);
-    authChain.setCustomHandler();
+    securityChain.setAuth(authSet);
+    securityChain.setAnon(anonSet);
+    securityChain.setAuthc(authcSet);
+    securityChain.setCustomHandler();
   }
 }
