@@ -1,6 +1,8 @@
 package com.wj.auth.core.chain;
 
-import com.google.common.collect.Maps;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.RateLimiter;
 import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.SubjectManager;
@@ -10,8 +12,9 @@ import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration.Strat
 import com.wj.auth.exception.rate.RateLimiterException;
 import com.wj.auth.utils.AuthUtils;
 import com.wj.auth.utils.CollectionUtils;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +31,7 @@ public class RateLimiterChain implements Chain {
 
   private final RateLimiterConfiguration configuration;
   private final RateLimiter rateLimiter;
-  private final Map<String, RateLimiter> ipRateLimiterMap = Maps.newConcurrentMap();
+  private final LoadingCache<String, RateLimiter> cache;
   private final RateLimiterCondition rateLimiterCondition;
   @Value("${server.servlet.context-path:}")
   private String contextPath;
@@ -40,10 +43,19 @@ public class RateLimiterChain implements Chain {
     this.configuration = authAutoConfiguration.getRateLimiter();
     this.rateLimiterCondition = rateLimiterCondition;
     if (configuration.getStrategy() == Strategy.NORMAL) {
+      this.cache = null;
       this.rateLimiter = RateLimiter.create(configuration.getThreshold());
     } else {
       this.rateLimiter = null;
+      this.cache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.HOURS)
+          .build(new CacheLoader<String, RateLimiter>() {
+            @Override
+            public RateLimiter load(String key) throws Exception {
+              return RateLimiter.create(configuration.getThreshold());
+            }
+          });
     }
+
   }
 
   @PostConstruct
@@ -98,18 +110,13 @@ public class RateLimiterChain implements Chain {
   }
 
   private void condition(String condition) {
-    if (ipRateLimiterMap.containsKey(condition)) {
-      rateLimitCheck(ipRateLimiterMap.get(condition));
-    } else {
-      RateLimiter rateLimiter = RateLimiter.create(configuration.getThreshold());
-      ipRateLimiterMap.put(condition, rateLimiter);
-      rateLimitCheck(rateLimiter);
-    }
-  }
-
-  private void rateLimitCheck(RateLimiter rateLimiter) {
-    if (!rateLimiter.tryAcquire()) {
-      throw new RateLimiterException("busy service");
+    try {
+      if (!cache.get(condition).tryAcquire()) {
+        throw new RateLimiterException("busy service");
+      }
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+      throw new RateLimiterException(e.getMessage());
     }
   }
 
