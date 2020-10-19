@@ -64,7 +64,6 @@ public class Run implements ApplicationRunner {
       AuthAutoConfiguration authAutoConfiguration,
       SecurityChain securityChain,
       XssChain xssChain,
-      RateLimiterConfiguration rateLimiterConfiguration,
       RateLimiterChain rateLimiterChain) {
     this.mapping = mapping;
     this.authAutoConfiguration = authAutoConfiguration;

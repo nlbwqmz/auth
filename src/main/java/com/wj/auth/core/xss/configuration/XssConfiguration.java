@@ -12,12 +12,12 @@ public class XssConfiguration {
   /**
    * 开启query过滤
    */
-  private boolean queryEnable;
+  private boolean queryEnable = false;
 
   /**
    * 开启body过滤
    */
-  private boolean bodyEnable;
+  private boolean bodyEnable = false;
   /**
    * 默认过滤范围
    */

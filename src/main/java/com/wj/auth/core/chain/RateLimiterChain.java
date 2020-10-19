@@ -85,7 +85,7 @@ public class RateLimiterChain implements Chain {
           break;
         case CUSTOM:
           condition(rateLimiterCondition
-              .getCondition(SubjectManager.getRequest(), SubjectManager.getResponse()));
+              .getCondition(SubjectManager.getRequest(), SubjectManager.getSubject()));
           break;
         default:
           throw new RateLimiterException("rate limiter configuration strategy cannot match");

@@ -28,7 +28,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
@@ -50,24 +49,24 @@ public class AuthTokenGenerate {
   /**
    * 算法
    */
-  private Algorithm algorithmObj;
+  private Algorithm algorithm;
   /**
    * 载体
    */
-  private String subjectClaim = "subject";
+  private String CLAIM_SUBJECT = "subject";
   /**
    * 过期时间
    */
-  private String expireClaim = "expire";
-
-  @Autowired
-  private AuthAutoConfiguration authAutoConfiguration;
+  private String CLAIM_EXPIRE = "expire";
 
   private TokenConfiguration tokenConfiguration;
 
+  public AuthTokenGenerate(AuthAutoConfiguration authAutoConfiguration) {
+    this.tokenConfiguration = authAutoConfiguration.getSecurity().getToken();
+  }
+
   @PostConstruct
   public void init() {
-    tokenConfiguration = authAutoConfiguration.getSecurity().getToken();
     AlgorithmEnum algorithmEnum;
     try {
       algorithmEnum = AlgorithmEnum.valueOf(tokenConfiguration.getAlgorithm());
@@ -114,7 +113,7 @@ public class AuthTokenGenerate {
       privateKey = (RSAPrivateKey) ((KeyStore.PrivateKeyEntry) keyStore.getEntry(keyAlias,
           new KeyStore.PasswordProtection(tokenConfiguration.getPassword().toCharArray())))
           .getPrivateKey();
-      algorithmObj = Algorithm.RSA256(publicKey, privateKey);
+      algorithm = Algorithm.RSA256(publicKey, privateKey);
     } catch (Exception e) {
       e.printStackTrace();
       throw new TokenFactoryInitException(e.getMessage());
@@ -136,32 +135,32 @@ public class AuthTokenGenerate {
     KeyPair keyPair = keyPairGen.generateKeyPair();
     publicKey = (RSAPublicKey) keyPair.getPublic();
     privateKey = (RSAPrivateKey) keyPair.getPrivate();
-    algorithmObj = Algorithm.RSA256(publicKey, privateKey);
+    algorithm = Algorithm.RSA256(publicKey, privateKey);
   }
 
   private void initHMAC256() {
-    algorithmObj = Algorithm.HMAC256(tokenConfiguration.getPassword());
+    algorithm = Algorithm.HMAC256(tokenConfiguration.getPassword());
   }
 
   private JWTCreator.Builder builder(Object obj, long expire) {
     return JWT.create()
         .withIssuer(tokenConfiguration.getIssuer())
         .withIssuedAt(new Date())
-        .withClaim(subjectClaim, JacksonUtils.toJSONString(obj))
-        .withClaim(expireClaim, expire);
+        .withClaim(CLAIM_SUBJECT, JacksonUtils.toJSONString(obj))
+        .withClaim(CLAIM_EXPIRE, expire);
   }
 
   public String create(Object obj) {
-    return builder(obj, -1).sign(algorithmObj);
+    return builder(obj, -1).sign(algorithm);
   }
 
   public String create(Object obj, long expire) {
     Builder builder = builder(obj, expire);
     if (expire > 0) {
       return builder.withExpiresAt(new Date(System.currentTimeMillis() + expire))
-          .sign(algorithmObj);
+          .sign(algorithm);
     } else {
-      return builder.sign(algorithmObj);
+      return builder.sign(algorithm);
     }
   }
 
@@ -171,12 +170,12 @@ public class AuthTokenGenerate {
     }
     DecodedJWT verify = verify(token);
     SubjectManager.setSubject(JacksonUtils
-        .toObject(verify.getClaim(subjectClaim).asString(), Object.class));
-    SubjectManager.setExpire(verify.getClaim(expireClaim).asLong());
+        .toObject(verify.getClaim(CLAIM_SUBJECT).asString(), Object.class));
+    SubjectManager.setExpire(verify.getClaim(CLAIM_EXPIRE).asLong());
   }
 
   public DecodedJWT verify(String authorization) {
-    JWTVerifier verifier = JWT.require(algorithmObj)
+    JWTVerifier verifier = JWT.require(algorithm)
         .withIssuer(tokenConfiguration.getIssuer())
         .build();
     try {
