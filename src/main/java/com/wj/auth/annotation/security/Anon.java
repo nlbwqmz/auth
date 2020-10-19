@@ -1,4 +1,4 @@
-package com.wj.auth.annotation;
+package com.wj.auth.annotation.security;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

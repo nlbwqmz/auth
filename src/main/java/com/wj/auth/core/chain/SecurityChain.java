@@ -16,13 +16,11 @@ import com.wj.auth.core.security.handler.InterceptorHandler;
 import com.wj.auth.exception.AuthInitException;
 import com.wj.auth.exception.security.PermissionNotFoundException;
 import com.wj.auth.utils.ArrayUtils;
-import com.wj.auth.utils.AuthUtils;
 import com.wj.auth.utils.CollectionUtils;
+import com.wj.auth.utils.MatchUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -90,12 +88,7 @@ public class SecurityChain implements Chain {
     for (AuthHandlerEntity authHandlerEntity : handlers) {
       Set<RequestVerification> requestVerifications = authHandlerEntity.getRequestVerifications();
       for (RequestVerification requestVerification : requestVerifications) {
-        Set<String> patterns = Optional.ofNullable(requestVerification.getPatterns())
-            .orElse(new HashSet<>());
-        Set<String> methods = Optional.ofNullable(requestVerification.getMethods())
-            .orElse(new HashSet<>());
-        if (AuthUtils.matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || CollectionUtils
-            .containsIgnoreCase(methods, method))) {
+        if (MatchUtils.matcher(requestVerification, uri, method)) {
           return new HandlerHelper(requestVerification.getAuth(), requestVerification.getLogical(),
               authHandlerEntity.getHandler());
         }

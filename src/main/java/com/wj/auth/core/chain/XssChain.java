@@ -5,17 +5,19 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.html.HtmlEscapers;
 import com.wj.auth.common.AuthAutoConfiguration;
+import com.wj.auth.common.FilterRange;
 import com.wj.auth.common.SubjectManager;
+import com.wj.auth.core.security.configuration.RequestVerification;
 import com.wj.auth.core.xss.XssRequestWrapper;
 import com.wj.auth.core.xss.configuration.XssConfiguration;
-import com.wj.auth.utils.AuthUtils;
+import com.wj.auth.exception.xss.XssException;
 import com.wj.auth.utils.CollectionUtils;
+import com.wj.auth.utils.MatchUtils;
 import java.io.IOException;
 import java.util.Set;
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -33,37 +35,41 @@ import org.springframework.stereotype.Component;
 @Component
 public class XssChain extends JsonSerializer<String> implements Chain {
 
-  private final AuthAutoConfiguration authAutoConfiguration;
-  private Set<String> xssIgnored = Sets.newHashSet();
-  private Set<String> xssOnly = Sets.newHashSet();
+  private final XssConfiguration xssConfiguration;
+  private ImmutableSet<RequestVerification> xssIgnored;
+  private ImmutableSet<RequestVerification> xssOnly;
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
   public XssChain(AuthAutoConfiguration authAutoConfiguration) {
-    this.authAutoConfiguration = authAutoConfiguration;
+    this.xssConfiguration = authAutoConfiguration.getXss();
   }
 
-  @PostConstruct
-  public void init() {
-    XssConfiguration xssConfiguration = authAutoConfiguration.getXss();
+  public void setXss(Set<RequestVerification> xssSet, Set<RequestVerification> xssIgnoredSet) {
     Set<String> only = xssConfiguration.getOnly();
+    Set<String> ignored = xssConfiguration.getIgnored();
     if (CollectionUtils.isNotBlank(only)) {
-      xssOnly = CollectionUtils.addUrlPrefix(only, contextPath);
-    } else {
-      Set<String> ignored = xssConfiguration.getIgnored();
-      if (CollectionUtils.isNotBlank(ignored)) {
-        xssIgnored = CollectionUtils.addUrlPrefix(ignored, contextPath);
-      }
+      xssSet.add(
+          RequestVerification.build().setPatterns(CollectionUtils.addUrlPrefix(only, contextPath)));
     }
+    if (CollectionUtils.isNotBlank(ignored)) {
+      xssIgnoredSet.add(RequestVerification.build()
+          .setPatterns(CollectionUtils.addUrlPrefix(ignored, contextPath)));
+    }
+    xssOnly = ImmutableSet.copyOf(xssSet);
+    xssIgnored = ImmutableSet.copyOf(xssIgnoredSet);
   }
 
   @Override
   public void doFilter(ChainManager chain) {
-    HttpServletRequest request = SubjectManager.getRequest();
-    if (isDoXss(request.getRequestURI())) {
-      SubjectManager.setRequest(new XssRequestWrapper(request));
+    if (xssConfiguration.isQueryEnable()) {
+      HttpServletRequest request = SubjectManager.getRequest();
+      if (isDoXss(request)) {
+        SubjectManager.setRequest(new XssRequestWrapper(request));
+      }
+    } else {
+      chain.doAuth();
     }
-    chain.doAuth();
   }
 
   @Override
@@ -74,19 +80,28 @@ public class XssChain extends JsonSerializer<String> implements Chain {
   @Override
   public void serialize(String value, JsonGenerator jsonGenerator,
       SerializerProvider serializerProvider) throws IOException {
-    if (isDoXss(SubjectManager.getRequest().getRequestURI())) {
-      if (value != null) {
-        jsonGenerator.writeString(HtmlEscapers.htmlEscaper().escape(value));
-      }
+    if (xssConfiguration.isBodyEnable() && isDoXss(SubjectManager.getRequest()) && value != null) {
+      jsonGenerator.writeString(HtmlEscapers.htmlEscaper().escape(value));
     } else {
       jsonGenerator.writeString(value);
     }
   }
 
-  private boolean isDoXss(String uri) {
-    return authAutoConfiguration.getXss().isQueryEnable() && (
-        (CollectionUtils.isNotBlank(xssOnly) && AuthUtils.matcher(xssOnly, uri))
-            || (CollectionUtils.isBlank(xssOnly) && !AuthUtils.matcher(xssIgnored, uri)));
+  /**
+   * 是否执行xss过滤
+   *
+   * @param request
+   * @return
+   */
+  private boolean isDoXss(HttpServletRequest request) {
+    FilterRange defaultFilterRange = xssConfiguration.getDefaultFilterRange();
+    String uri = request.getRequestURI();
+    String method = request.getMethod();
+    switch (defaultFilterRange){
+      case ALL:return !MatchUtils.matcher(xssIgnored, uri, method);
+      case NONE:return MatchUtils.matcher(xssOnly, request.getRequestURI(), request.getMethod());
+      default:throw new XssException("xss configuration defaultFilterRange cannot match");
+    }
   }
 
   /**

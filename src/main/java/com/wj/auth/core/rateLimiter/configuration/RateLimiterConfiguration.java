@@ -1,5 +1,6 @@
 package com.wj.auth.core.rateLimiter.configuration;
 
+import com.wj.auth.common.FilterRange;
 import java.util.Set;
 
 /**
@@ -33,6 +34,11 @@ public class RateLimiterConfiguration {
    * 策略
    */
   private Strategy strategy = Strategy.NORMAL;
+
+  /**
+   * 默认过滤范围
+   */
+  private FilterRange defaultFilterRange = FilterRange.ALL;
 
   public boolean isEnabled() {
     return enabled;
@@ -72,6 +78,14 @@ public class RateLimiterConfiguration {
 
   public void setOnly(Set<String> only) {
     this.only = only;
+  }
+
+  public FilterRange getDefaultFilterRange() {
+    return defaultFilterRange;
+  }
+
+  public void setDefaultFilterRange(FilterRange defaultFilterRange) {
+    this.defaultFilterRange = defaultFilterRange;
   }
 
   public enum Strategy {

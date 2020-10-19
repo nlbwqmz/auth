@@ -3,19 +3,21 @@ package com.wj.auth.core.chain;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
 import com.wj.auth.common.AuthAutoConfiguration;
+import com.wj.auth.common.FilterRange;
 import com.wj.auth.common.SubjectManager;
 import com.wj.auth.core.rateLimiter.RateLimiterCondition;
 import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration;
 import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration.Strategy;
+import com.wj.auth.core.security.configuration.RequestVerification;
 import com.wj.auth.exception.rate.RateLimiterException;
-import com.wj.auth.utils.AuthUtils;
 import com.wj.auth.utils.CollectionUtils;
+import com.wj.auth.utils.MatchUtils;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
@@ -29,52 +31,52 @@ import org.springframework.stereotype.Component;
 @Component
 public class RateLimiterChain implements Chain {
 
-  private final RateLimiterConfiguration configuration;
+  private final RateLimiterConfiguration rateLimiterConfiguration;
   private final RateLimiter rateLimiter;
   private final LoadingCache<String, RateLimiter> cache;
   private final RateLimiterCondition rateLimiterCondition;
   @Value("${server.servlet.context-path:}")
   private String contextPath;
-  private Set<String> ignored;
-  private Set<String> only;
+  private ImmutableSet<RequestVerification> ignored;
+  private ImmutableSet<RequestVerification> only;
 
   public RateLimiterChain(AuthAutoConfiguration authAutoConfiguration,
       @Autowired(required = false) RateLimiterCondition rateLimiterCondition) {
-    this.configuration = authAutoConfiguration.getRateLimiter();
+    this.rateLimiterConfiguration = authAutoConfiguration.getRateLimiter();
     this.rateLimiterCondition = rateLimiterCondition;
-    if (configuration.getStrategy() == Strategy.NORMAL) {
+    if (rateLimiterConfiguration.getStrategy() == Strategy.NORMAL) {
       this.cache = null;
-      this.rateLimiter = RateLimiter.create(configuration.getThreshold());
+      this.rateLimiter = RateLimiter.create(rateLimiterConfiguration.getThreshold());
     } else {
       this.rateLimiter = null;
       this.cache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.HOURS)
           .build(new CacheLoader<String, RateLimiter>() {
             @Override
             public RateLimiter load(String key) throws Exception {
-              return RateLimiter.create(configuration.getThreshold());
+              return RateLimiter.create(rateLimiterConfiguration.getThreshold());
             }
           });
     }
 
   }
-
-  @PostConstruct
-  public void init() {
-    Set<String> only = configuration.getOnly();
-    if (CollectionUtils.isNotBlank(only)) {
-      this.only = CollectionUtils.addUrlPrefix(only, contextPath);
-    } else {
-      Set<String> ignored = configuration.getIgnored();
-      if (CollectionUtils.isNotBlank(ignored)) {
-        this.ignored = CollectionUtils.addUrlPrefix(ignored, contextPath);
-      }
+  public void setRateLimiter(Set<RequestVerification> rateLimiterSet,
+      Set<RequestVerification> rateLimiterIgnoredSet) {
+    Set<String> only = rateLimiterConfiguration.getOnly();
+    Set<String> ignored = rateLimiterConfiguration.getIgnored();
+    if(CollectionUtils.isNotBlank(only)){
+      rateLimiterSet.add(RequestVerification.build().setPatterns(CollectionUtils.addUrlPrefix(only, contextPath)));
     }
+    if(CollectionUtils.isNotBlank(ignored)){
+      rateLimiterIgnoredSet.add(RequestVerification.build().setPatterns(CollectionUtils.addUrlPrefix(ignored, contextPath)));
+    }
+    this.only = ImmutableSet.copyOf(rateLimiterSet);
+    this.ignored = ImmutableSet.copyOf(rateLimiterIgnoredSet);
   }
 
   @Override
   public void doFilter(ChainManager chain) {
-    if (configuration.isEnabled() && checkIsLimit()) {
-      switch (configuration.getStrategy()) {
+    if (rateLimiterConfiguration.isEnabled() && checkIsLimit()) {
+      switch (rateLimiterConfiguration.getStrategy()) {
         case NORMAL:
           normal();
           break;
@@ -86,7 +88,7 @@ public class RateLimiterChain implements Chain {
               .getCondition(SubjectManager.getRequest(), SubjectManager.getResponse()));
           break;
         default:
-          throw new RateLimiterException("unknown exception");
+          throw new RateLimiterException("rate limiter configuration strategy cannot match");
       }
     }
     chain.doAuth();
@@ -94,13 +96,13 @@ public class RateLimiterChain implements Chain {
 
   private boolean checkIsLimit() {
     String uri = SubjectManager.getRequest().getRequestURI();
-    if (CollectionUtils.isNotBlank(only)) {
-      return AuthUtils.matcher(only, uri);
+    String method = SubjectManager.getRequest().getMethod();
+    FilterRange defaultFilterRange = rateLimiterConfiguration.getDefaultFilterRange();
+    switch (defaultFilterRange){
+      case ALL: return !MatchUtils.matcher(ignored, uri, method);
+      case NONE: return MatchUtils.matcher(only, uri, method);
+      default:throw new RateLimiterException("rate limiter configuration defaultFilterRange cannot match");
     }
-    if (CollectionUtils.isNotBlank(ignored)) {
-      return !AuthUtils.matcher(ignored, uri);
-    }
-    return true;
   }
 
   private void normal() {
@@ -126,4 +128,6 @@ public class RateLimiterChain implements Chain {
   private String getIp() {
     return "";
   }
+
+
 }

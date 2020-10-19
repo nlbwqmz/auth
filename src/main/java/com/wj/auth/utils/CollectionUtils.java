@@ -1,5 +1,6 @@
 package com.wj.auth.utils;
 
+import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -10,6 +11,8 @@ import java.util.Set;
  * @since 2020/9/18
  */
 public class CollectionUtils {
+
+
 
   /**
    * 集合是否为空
@@ -27,6 +30,7 @@ public class CollectionUtils {
 
   public static Set<String> addUrlPrefix(Set<String> set, String prefix) {
     prefix = Optional.ofNullable(prefix).orElse("");
+    set = Optional.ofNullable(set).orElse(Sets.newHashSet());
     Set<String> result = new HashSet<>();
     for (String item : set) {
       if (item.startsWith("/")) {
@@ -49,5 +53,7 @@ public class CollectionUtils {
     }
     return false;
   }
+
+
 
 }

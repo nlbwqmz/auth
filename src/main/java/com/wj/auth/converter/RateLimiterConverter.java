@@ -1,4 +1,4 @@
-package com.wj.auth.core.rateLimiter;
+package com.wj.auth.converter;
 
 import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration.Strategy;
 import org.springframework.context.annotation.Configuration;
