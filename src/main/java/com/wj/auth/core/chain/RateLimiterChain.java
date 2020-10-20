@@ -5,12 +5,12 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
-import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.FilterRange;
 import com.wj.auth.common.SubjectManager;
+import com.wj.auth.configuration.AuthAutoConfiguration;
+import com.wj.auth.configuration.RateLimiterConfiguration;
+import com.wj.auth.configuration.RateLimiterConfiguration.Strategy;
 import com.wj.auth.core.rateLimiter.RateLimiterCondition;
-import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration;
-import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration.Strategy;
 import com.wj.auth.core.security.configuration.RequestVerification;
 import com.wj.auth.exception.rate.RateLimiterException;
 import com.wj.auth.utils.CollectionUtils;
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
  * @author weijie
  * @since 2020/10/16
  */
-@Order(0)
+@Order(1)
 @Component
 public class RateLimiterChain implements Chain {
 

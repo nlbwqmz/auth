@@ -4,6 +4,7 @@ package com.wj.auth.core.chain;
  * @author weijie
  * @since 2020/10/16
  */
+@FunctionalInterface
 public interface Chain {
 
   /**

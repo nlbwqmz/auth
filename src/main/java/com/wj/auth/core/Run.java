@@ -7,16 +7,16 @@ import com.wj.auth.annotation.security.Anon;
 import com.wj.auth.annotation.security.Auth;
 import com.wj.auth.annotation.xss.Xss;
 import com.wj.auth.annotation.xss.XssIgnored;
-import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.FilterRange;
+import com.wj.auth.configuration.AuthAutoConfiguration;
+import com.wj.auth.configuration.RateLimiterConfiguration;
+import com.wj.auth.configuration.SecurityConfiguration;
+import com.wj.auth.configuration.XssConfiguration;
 import com.wj.auth.core.chain.RateLimiterChain;
 import com.wj.auth.core.chain.SecurityChain;
 import com.wj.auth.core.chain.XssChain;
-import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration;
-import com.wj.auth.core.security.AuthRealm;
+import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.core.security.configuration.RequestVerification;
-import com.wj.auth.core.security.configuration.SecurityConfiguration;
-import com.wj.auth.core.xss.configuration.XssConfiguration;
 import com.wj.auth.exception.AuthInitException;
 import com.wj.auth.utils.ArrayUtils;
 import com.wj.auth.utils.CollectionUtils;
@@ -40,7 +40,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author weijie
  * @since 2020/9/14
  */
-@ConditionalOnBean(AuthRealm.class)
+@ConditionalOnBean(SecurityRealm.class)
 @ServletComponentScan("com.wj.auth")
 @ComponentScan("com.wj.auth")
 public class Run implements ApplicationRunner {

@@ -1,9 +1,9 @@
 package com.wj.auth.core;
 
-import com.wj.auth.common.AuthAutoConfiguration;
 import com.wj.auth.common.SubjectManager;
+import com.wj.auth.configuration.AuthAutoConfiguration;
+import com.wj.auth.configuration.SecurityConfiguration;
 import com.wj.auth.core.security.AuthTokenGenerate;
-import com.wj.auth.core.security.configuration.SecurityConfiguration;
 import com.wj.auth.utils.JacksonUtils;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;

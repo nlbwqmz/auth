@@ -1,4 +1,4 @@
-package com.wj.auth.core.cors.configuration;
+package com.wj.auth.configuration;
 
 /**
  * 跨域配置

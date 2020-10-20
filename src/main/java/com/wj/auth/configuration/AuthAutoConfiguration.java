@@ -1,13 +1,9 @@
-package com.wj.auth.common;
+package com.wj.auth.configuration;
 
+import com.wj.auth.configuration.RateLimiterConfiguration.Strategy;
 import com.wj.auth.core.Run;
-import com.wj.auth.core.cors.configuration.CorsConfiguration;
 import com.wj.auth.core.rateLimiter.RateLimiterCondition;
-import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration;
-import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration.Strategy;
-import com.wj.auth.core.security.AuthRealm;
-import com.wj.auth.core.security.configuration.SecurityConfiguration;
-import com.wj.auth.core.xss.configuration.XssConfiguration;
+import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.exception.rate.RateLimiterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +54,10 @@ public class AuthAutoConfiguration implements InitializingBean {
 
   private final RateLimiterCondition rateLimiterCondition;
 
-  public AuthAutoConfiguration(@Autowired(required = false) AuthRealm authRealm,
+  public AuthAutoConfiguration(@Autowired(required = false) SecurityRealm securityRealm,
       @Autowired(required = false) RateLimiterCondition rateLimiterCondition) {
-    if (authRealm == null && log.isWarnEnabled()) {
-      log.warn("auth cannot be turned on, because AuthRealm is required.");
+    if (securityRealm == null && log.isWarnEnabled()) {
+      log.warn("auth cannot be turned on, because SecurityRealm is required.");
     }
     this.rateLimiterCondition = rateLimiterCondition;
   }

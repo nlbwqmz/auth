@@ -1,4 +1,4 @@
-package com.wj.auth.core.security.configuration;
+package com.wj.auth.configuration;
 
 /**
  * token配置

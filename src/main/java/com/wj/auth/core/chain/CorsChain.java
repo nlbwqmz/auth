@@ -1,8 +1,8 @@
 package com.wj.auth.core.chain;
 
-import com.wj.auth.common.AuthAutoConfiguration;
-import com.wj.auth.core.cors.configuration.CorsConfiguration;
 import com.wj.auth.common.SubjectManager;
+import com.wj.auth.configuration.AuthAutoConfiguration;
+import com.wj.auth.configuration.CorsConfiguration;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;

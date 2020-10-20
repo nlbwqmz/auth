@@ -1,6 +1,6 @@
 package com.wj.auth.converter;
 
-import com.wj.auth.core.rateLimiter.configuration.RateLimiterConfiguration.Strategy;
+import com.wj.auth.configuration.RateLimiterConfiguration.Strategy;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 

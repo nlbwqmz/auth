@@ -1,4 +1,4 @@
-package com.wj.auth.core.security.configuration;
+package com.wj.auth.configuration;
 
 import java.util.Set;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;

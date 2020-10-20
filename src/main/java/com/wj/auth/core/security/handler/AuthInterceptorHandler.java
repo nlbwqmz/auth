@@ -1,7 +1,7 @@
 package com.wj.auth.core.security.handler;
 
 import com.wj.auth.core.security.configuration.Logical;
-import com.wj.auth.exception.AuthException;
+import com.wj.auth.exception.security.AuthSecurityException;
 import com.wj.auth.utils.CollectionUtils;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +26,7 @@ public class AuthInterceptorHandler implements InterceptorHandler {
       case AND:
         return checkAnd(userAuth, auth);
       default:
-        throw new AuthException("Unknown exception");
+        throw new AuthSecurityException("unknown exception");
     }
   }
 

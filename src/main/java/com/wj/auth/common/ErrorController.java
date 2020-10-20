@@ -1,6 +1,7 @@
 package com.wj.auth.common;
 
-import com.wj.auth.core.security.AuthRealm;
+import com.wj.auth.configuration.AuthAutoConfiguration;
+import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.exception.AuthException;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author weijie
  * @since 2020/10/14
  */
-@ConditionalOnBean(AuthRealm.class)
+@ConditionalOnBean(SecurityRealm.class)
 @RestController
 @RequestMapping("auth")
 public class ErrorController {

@@ -1,4 +1,4 @@
-package com.wj.auth.core.rateLimiter.configuration;
+package com.wj.auth.configuration;
 
 import com.wj.auth.common.FilterRange;
 import java.util.Set;

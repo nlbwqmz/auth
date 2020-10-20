@@ -8,7 +8,7 @@ import java.util.Set;
  * @author weijie
  * @since 2020/10/9
  */
-public interface AuthRealm {
+public interface SecurityRealm {
 
   /**
    * 用户授权
