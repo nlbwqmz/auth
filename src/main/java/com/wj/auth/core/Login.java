@@ -5,6 +5,7 @@ import com.wj.auth.configuration.AuthAutoConfiguration;
 import com.wj.auth.configuration.SecurityConfiguration;
 import com.wj.auth.core.security.AuthTokenGenerate;
 import com.wj.auth.utils.JacksonUtils;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 
@@ -23,11 +24,23 @@ public class Login {
     this.security = authAutoConfiguration.getSecurity();
     this.authTokenGenerate = authTokenGenerate;
   }
+
   /**
    * 登录
    *
    * @param obj
-   * @param expire
+   * @param duration
+   * @param timeUnit
+   */
+  public void doLogin(Object obj, long duration, TimeUnit timeUnit) {
+    doLogin(obj, timeUnit.toMillis(duration));
+  }
+
+  /**
+   * 登录
+   *
+   * @param obj
+   * @param expire 毫秒
    */
   public void doLogin(Object obj, long expire) {
     HttpServletResponse response = SubjectManager.getResponse();
