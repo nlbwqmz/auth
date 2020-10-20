@@ -24,4 +24,9 @@ public class AuthcInterceptorHandler implements InterceptorHandler {
       HttpServletResponse response, String header) {
     return request.getHeader(header);
   }
+
+  @Override
+  public boolean isAuthorize() {
+    return false;
+  }
 }

@@ -72,7 +72,7 @@ public class SecurityChain implements Chain {
         long expire = SubjectManager.getExpire();
         login.doLogin(subject, expire);
       }
-      if (!handler.authorize(request, response, auth, handlerHelper.getLogical(),
+      if (handler.isAuthorize() && !handler.authorize(request, response, auth, handlerHelper.getLogical(),
           securityRealm.doAuthorization())) {
         throw new PermissionNotFoundException(
             String.format("%s permission required, logical is %s.", ArrayUtils.format(auth),

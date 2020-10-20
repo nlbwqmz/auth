@@ -46,4 +46,13 @@ public interface InterceptorHandler {
   default boolean isRefreshToken() {
     return true;
   }
+
+  /**
+   * 是否授权
+   *
+   * @return
+   */
+  default boolean isAuthorize() {
+    return true;
+  }
 }

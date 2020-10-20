@@ -33,4 +33,9 @@ public class AnonInterceptorHandler implements InterceptorHandler {
   public boolean isRefreshToken() {
     return false;
   }
+
+  @Override
+  public boolean isAuthorize() {
+    return false;
+  }
 }
