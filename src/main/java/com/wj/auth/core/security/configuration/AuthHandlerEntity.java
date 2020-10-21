@@ -1,5 +1,6 @@
 package com.wj.auth.core.security.configuration;
 
+import com.wj.auth.common.AuthHelper;
 import com.wj.auth.core.security.handler.InterceptorHandler;
 import java.util.Set;
 
@@ -9,27 +10,27 @@ import java.util.Set;
  */
 public class AuthHandlerEntity {
 
-  private Set<RequestVerification> requestVerifications;
+  private Set<AuthHelper> authHelpers;
   private InterceptorHandler handler;
   private int order;
 
   public AuthHandlerEntity() {
   }
 
-  public AuthHandlerEntity(Set<RequestVerification> requestVerifications,
+  public AuthHandlerEntity(Set<AuthHelper> authHelpers,
       InterceptorHandler handler, int order) {
-    this.requestVerifications = requestVerifications;
+    this.authHelpers = authHelpers;
     this.handler = handler;
     this.order = order;
   }
 
-  public Set<RequestVerification> getRequestVerifications() {
-    return requestVerifications;
+  public Set<AuthHelper> getAuthHelpers() {
+    return authHelpers;
   }
 
-  public AuthHandlerEntity setRequestVerifications(
-      Set<RequestVerification> requestVerifications) {
-    this.requestVerifications = requestVerifications;
+  public AuthHandlerEntity setAuthHelpers(
+      Set<AuthHelper> authHelpers) {
+    this.authHelpers = authHelpers;
     return this;
   }
 

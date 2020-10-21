@@ -1,5 +1,6 @@
 package com.wj.auth.core.chain;
 
+import com.wj.auth.common.AuthHelper;
 import com.wj.auth.common.SubjectManager;
 import com.wj.auth.configuration.AuthAutoConfiguration;
 import com.wj.auth.configuration.SecurityConfiguration;
@@ -8,7 +9,6 @@ import com.wj.auth.core.security.AuthTokenGenerate;
 import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.core.security.configuration.AuthHandlerEntity;
 import com.wj.auth.core.security.configuration.Logical;
-import com.wj.auth.core.security.configuration.RequestVerification;
 import com.wj.auth.core.security.handler.AnonInterceptorHandler;
 import com.wj.auth.core.security.handler.AuthInterceptorHandler;
 import com.wj.auth.core.security.handler.AuthcInterceptorHandler;
@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SecurityChain implements Chain {
 
-  private final SecurityConfiguration security;
+  private final SecurityConfiguration securityConfiguration;
   private final AuthTokenGenerate authTokenGenerate;
   private final SecurityRealm securityRealm;
   private final Login login;
@@ -48,7 +48,7 @@ public class SecurityChain implements Chain {
       AuthTokenGenerate authTokenGenerate,
       SecurityRealm securityRealm,
       Login login) {
-    this.security = authAutoConfiguration.getSecurity();
+    this.securityConfiguration = authAutoConfiguration.getSecurity();
     this.authTokenGenerate = authTokenGenerate;
     this.securityRealm = securityRealm;
     this.login = login;
@@ -63,7 +63,7 @@ public class SecurityChain implements Chain {
       InterceptorHandler handler = handlerHelper.getHandler();
       String[] auth = handlerHelper.getAuth();
       String authenticate = handler
-          .authenticate(request, response, security.getHeader());
+          .authenticate(request, response, securityConfiguration.getHeader());
       if (handler.isDecodeToken()) {
         authTokenGenerate.decode(authenticate);
       }
@@ -72,8 +72,9 @@ public class SecurityChain implements Chain {
         long expire = SubjectManager.getExpire();
         login.doLogin(subject, expire);
       }
-      if (handler.isAuthorize() && !handler.authorize(request, response, auth, handlerHelper.getLogical(),
-          securityRealm.doAuthorization())) {
+      if (handler.isAuthorize() && !handler
+          .authorize(request, response, auth, handlerHelper.getLogical(),
+              securityRealm.doAuthorization())) {
         throw new PermissionNotFoundException(
             String.format("%s permission required, logical is %s.", ArrayUtils.format(auth),
                 handlerHelper.getLogical().name()));
@@ -86,30 +87,30 @@ public class SecurityChain implements Chain {
     String uri = request.getRequestURI();
     String method = request.getMethod();
     for (AuthHandlerEntity authHandlerEntity : handlers) {
-      Set<RequestVerification> requestVerifications = authHandlerEntity.getRequestVerifications();
-      for (RequestVerification requestVerification : requestVerifications) {
-        if (MatchUtils.matcher(requestVerification, uri, method)) {
-          return new HandlerHelper(requestVerification.getAuth(), requestVerification.getLogical(),
+      Set<AuthHelper> authHelpers = authHandlerEntity.getAuthHelpers();
+      for (AuthHelper authHelper : authHelpers) {
+        if (MatchUtils.matcher(authHelper, uri, method)) {
+          return new HandlerHelper(authHelper.getAuth(), authHelper.getLogical(),
               authHandlerEntity.getHandler());
         }
       }
     }
-    if (security.isStrict()) {
+    if (securityConfiguration.isStrict()) {
       return new HandlerHelper(new AuthcInterceptorHandler());
     } else {
       return null;
     }
   }
 
-  public void setAuth(Set<RequestVerification> authSet) {
-    Set<RequestVerification> requestVerificationSet = securityRealm.addAuthPatterns();
-    if (CollectionUtils.isNotBlank(requestVerificationSet)) {
-      for (RequestVerification requestVerification : requestVerificationSet) {
-        Set<String> patterns = requestVerification.getPatterns();
-        String[] auth = requestVerification.getAuth();
+  public void setAuth(Set<AuthHelper> authSet) {
+    Set<AuthHelper> authHelperSet = securityRealm.addAuthPatterns();
+    if (CollectionUtils.isNotBlank(authHelperSet)) {
+      for (AuthHelper authHelper : authHelperSet) {
+        Set<String> patterns = authHelper.getPatterns();
+        String[] auth = authHelper.getAuth();
         if (CollectionUtils.isNotBlank(patterns) && ArrayUtils.isAllNotBlank(auth)) {
-          requestVerification.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
-          authSet.add(requestVerification);
+          authHelper.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
+          authSet.add(authHelper);
         } else {
           String clazz = securityRealm.getClass().toString();
           clazz = clazz.substring(6, clazz.indexOf("$$"));
@@ -122,28 +123,33 @@ public class SecurityChain implements Chain {
     addHandler(new AuthHandlerEntity(authSet, new AuthInterceptorHandler(), 0));
   }
 
-  public void setAnon(Set<RequestVerification> anonSet) {
-    if (CollectionUtils.isNotBlank(security.getAnon())) {
-      anonSet.add(RequestVerification.build()
-          .setPatterns(CollectionUtils.addUrlPrefix(security.getAnon(), contextPath)));
+  public void setAnon(Set<AuthHelper> anonSet) {
+    if (CollectionUtils.isNotBlank(securityConfiguration.getAnon())) {
+      anonSet.add(AuthHelper.otherBuilder()
+          .setPatterns(CollectionUtils.addUrlPrefix(securityConfiguration.getAnon(), contextPath))
+          .build());
     }
-    RequestVerification anonRequestVerification = securityRealm.addAnonPatterns();
-    if (anonRequestVerification != null) {
-      Set<String> patterns = anonRequestVerification.getPatterns();
-      if (CollectionUtils.isNotBlank(patterns)) {
-        anonRequestVerification.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
-        anonSet.add(anonRequestVerification);
-      } else {
-        String clazz = securityRealm.getClass().toString();
-        clazz = clazz.substring(6, clazz.indexOf("$$"));
-        throw new AuthInitException(
-            String.format("at %s.addAnonPatterns, patterns can't be blank.", clazz));
+    Set<AuthHelper> anonAuthHelperSet = securityRealm.addAnonPatterns();
+    if (CollectionUtils.isNotBlank(anonAuthHelperSet)) {
+      for (AuthHelper authHelper : anonAuthHelperSet) {
+        if (authHelper != null) {
+          Set<String> patterns = authHelper.getPatterns();
+          if (CollectionUtils.isNotBlank(patterns)) {
+            authHelper.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
+            anonSet.add(authHelper);
+          } else {
+            String clazz = securityRealm.getClass().toString();
+            clazz = clazz.substring(6, clazz.indexOf("$$"));
+            throw new AuthInitException(
+                String.format("at %s.addAnonPatterns, patterns can't be blank.", clazz));
+          }
+        }
       }
     }
     addHandler(new AuthHandlerEntity(anonSet, new AnonInterceptorHandler(), 100));
   }
 
-  public void setAuthc(Set<RequestVerification> authcSet) {
+  public void setAuthc(Set<AuthHelper> authcSet) {
     addHandler(new AuthHandlerEntity(authcSet, new AuthcInterceptorHandler(), 200));
   }
 

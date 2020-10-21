@@ -7,6 +7,7 @@ import com.wj.auth.annotation.security.Anon;
 import com.wj.auth.annotation.security.Auth;
 import com.wj.auth.annotation.xss.Xss;
 import com.wj.auth.annotation.xss.XssIgnored;
+import com.wj.auth.common.AuthHelper;
 import com.wj.auth.common.FilterRange;
 import com.wj.auth.configuration.AuthAutoConfiguration;
 import com.wj.auth.configuration.RateLimiterConfiguration;
@@ -16,7 +17,6 @@ import com.wj.auth.core.chain.RateLimiterChain;
 import com.wj.auth.core.chain.SecurityChain;
 import com.wj.auth.core.chain.XssChain;
 import com.wj.auth.core.security.SecurityRealm;
-import com.wj.auth.core.security.configuration.RequestVerification;
 import com.wj.auth.exception.AuthInitException;
 import com.wj.auth.utils.ArrayUtils;
 import com.wj.auth.utils.CollectionUtils;
@@ -50,13 +50,13 @@ public class Run implements ApplicationRunner {
   private final SecurityChain securityChain;
   private final XssChain xssChain;
   private final RateLimiterChain rateLimiterChain;
-  Set<RequestVerification> authSet = Sets.newHashSet();
-  Set<RequestVerification> anonSet = Sets.newHashSet();
-  Set<RequestVerification> authcSet = Sets.newHashSet();
-  Set<RequestVerification> xssIgnoredSet = Sets.newHashSet();
-  Set<RequestVerification> xssSet = Sets.newHashSet();
-  Set<RequestVerification> rateLimiterIgnoredSet = Sets.newHashSet();
-  Set<RequestVerification> rateLimiterSet = Sets.newHashSet();
+  Set<AuthHelper> authSet = Sets.newHashSet();
+  Set<AuthHelper> anonSet = Sets.newHashSet();
+  Set<AuthHelper> authcSet = Sets.newHashSet();
+  Set<AuthHelper> xssIgnoredSet = Sets.newHashSet();
+  Set<AuthHelper> xssSet = Sets.newHashSet();
+  Set<AuthHelper> rateLimiterIgnoredSet = Sets.newHashSet();
+  Set<AuthHelper> rateLimiterSet = Sets.newHashSet();
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
@@ -102,9 +102,10 @@ public class Run implements ApplicationRunner {
       FilterRange defaultFilterRange = rateLimiterConfiguration.getDefaultFilterRange();
       if (defaultFilterRange == FilterRange.ALL && hasAnnotation(method, RateLimitIgnored.class)) {
         rateLimiterIgnoredSet
-            .add(RequestVerification.build().setPatterns(patterns).setMethods(methods));
+            .add(AuthHelper.otherBuilder().setPatterns(patterns).setMethods(methods).build());
       } else if (defaultFilterRange == FilterRange.NONE && hasAnnotation(method, RateLimit.class)) {
-        rateLimiterSet.add(RequestVerification.build().setPatterns(patterns).setMethods(methods));
+        rateLimiterSet
+            .add(AuthHelper.otherBuilder().setPatterns(patterns).setMethods(methods).build());
       }
     }
   }
@@ -114,9 +115,10 @@ public class Run implements ApplicationRunner {
     if (xssConfiguration.isQueryEnable() || xssConfiguration.isBodyEnable()) {
       FilterRange defaultFilterRange = xssConfiguration.getDefaultFilterRange();
       if (defaultFilterRange == FilterRange.ALL && hasAnnotation(method, XssIgnored.class)) {
-        xssIgnoredSet.add(RequestVerification.build().setPatterns(patterns).setMethods(methods));
+        xssIgnoredSet
+            .add(AuthHelper.otherBuilder().setPatterns(patterns).setMethods(methods).build());
       } else if (defaultFilterRange == FilterRange.NONE && hasAnnotation(method, Xss.class)) {
-        xssSet.add(RequestVerification.build().setPatterns(patterns).setMethods(methods));
+        xssSet.add(AuthHelper.otherBuilder().setPatterns(patterns).setMethods(methods).build());
       }
     }
   }
@@ -131,11 +133,11 @@ public class Run implements ApplicationRunner {
         String[] authValueArray = auth.value();
         if (ArrayUtils.isAllNotBlank(authValueArray)) {
           authSet.add(
-              RequestVerification.build()
+              AuthHelper.authBuilder()
                   .setPatterns(patterns)
                   .setMethods(methods)
                   .setAuth(auth.value())
-                  .setLogical(auth.logical()));
+                  .setLogical(auth.logical()).build());
         } else {
           throw new AuthInitException(
               String.format("at %s.%s, annotation Auth value can't be blank",
@@ -144,25 +146,25 @@ public class Run implements ApplicationRunner {
         return;
       } else if (anon != null) {
         anonSet
-            .add(RequestVerification.build().setPatterns(patterns).setMethods(methods));
+            .add(AuthHelper.otherBuilder().setPatterns(patterns).setMethods(methods).build());
         return;
       }
       Auth declaredAuth = declaringClass.getAnnotation(Auth.class);
       Anon declaredAnon = declaringClass.getAnnotation(Anon.class);
       if (declaredAuth != null) {
-        authSet.add(RequestVerification.build()
+        authSet.add(AuthHelper.authBuilder()
             .setPatterns(patterns)
             .setMethods(methods)
             .setAuth(declaredAuth.value())
-            .setLogical(declaredAuth.logical()));
+            .setLogical(declaredAuth.logical()).build());
         return;
       } else if (declaredAnon != null) {
         anonSet
-            .add(RequestVerification.build().setPatterns(patterns).setMethods(methods));
+            .add(AuthHelper.otherBuilder().setPatterns(patterns).setMethods(methods).build());
         return;
       }
     }
-    authcSet.add(RequestVerification.build().setPatterns(patterns).setMethods(methods));
+    authcSet.add(AuthHelper.otherBuilder().setPatterns(patterns).setMethods(methods).build());
   }
 
   private boolean hasAnnotation(Method method, Class<? extends Annotation> annotationClass) {

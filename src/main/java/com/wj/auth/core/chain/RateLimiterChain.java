@@ -5,13 +5,13 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.RateLimiter;
+import com.wj.auth.common.AuthHelper;
 import com.wj.auth.common.FilterRange;
 import com.wj.auth.common.SubjectManager;
 import com.wj.auth.configuration.AuthAutoConfiguration;
 import com.wj.auth.configuration.RateLimiterConfiguration;
 import com.wj.auth.configuration.RateLimiterConfiguration.Strategy;
 import com.wj.auth.core.rateLimiter.RateLimiterCondition;
-import com.wj.auth.core.security.configuration.RequestVerification;
 import com.wj.auth.exception.rate.RateLimiterException;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.MatchUtils;
@@ -37,8 +37,8 @@ public class RateLimiterChain implements Chain {
   private final RateLimiterCondition rateLimiterCondition;
   @Value("${server.servlet.context-path:}")
   private String contextPath;
-  private ImmutableSet<RequestVerification> ignored;
-  private ImmutableSet<RequestVerification> only;
+  private ImmutableSet<AuthHelper> ignored;
+  private ImmutableSet<AuthHelper> only;
 
   public RateLimiterChain(AuthAutoConfiguration authAutoConfiguration,
       @Autowired(required = false) RateLimiterCondition rateLimiterCondition) {
@@ -59,15 +59,18 @@ public class RateLimiterChain implements Chain {
     }
 
   }
-  public void setRateLimiter(Set<RequestVerification> rateLimiterSet,
-      Set<RequestVerification> rateLimiterIgnoredSet) {
+
+  public void setRateLimiter(Set<AuthHelper> rateLimiterSet,
+      Set<AuthHelper> rateLimiterIgnoredSet) {
     Set<String> only = rateLimiterConfiguration.getOnly();
     Set<String> ignored = rateLimiterConfiguration.getIgnored();
-    if(CollectionUtils.isNotBlank(only)){
-      rateLimiterSet.add(RequestVerification.build().setPatterns(CollectionUtils.addUrlPrefix(only, contextPath)));
+    if (CollectionUtils.isNotBlank(only)) {
+      rateLimiterSet.add(AuthHelper.otherBuilder()
+          .setPatterns(CollectionUtils.addUrlPrefix(only, contextPath)).build());
     }
-    if(CollectionUtils.isNotBlank(ignored)){
-      rateLimiterIgnoredSet.add(RequestVerification.build().setPatterns(CollectionUtils.addUrlPrefix(ignored, contextPath)));
+    if (CollectionUtils.isNotBlank(ignored)) {
+      rateLimiterIgnoredSet.add(AuthHelper.otherBuilder()
+          .setPatterns(CollectionUtils.addUrlPrefix(ignored, contextPath)).build());
     }
     this.only = ImmutableSet.copyOf(rateLimiterSet);
     this.ignored = ImmutableSet.copyOf(rateLimiterIgnoredSet);
@@ -98,10 +101,14 @@ public class RateLimiterChain implements Chain {
     String uri = SubjectManager.getRequest().getRequestURI();
     String method = SubjectManager.getRequest().getMethod();
     FilterRange defaultFilterRange = rateLimiterConfiguration.getDefaultFilterRange();
-    switch (defaultFilterRange){
-      case ALL: return !MatchUtils.matcher(ignored, uri, method);
-      case NONE: return MatchUtils.matcher(only, uri, method);
-      default:throw new RateLimiterException("rate limiter configuration defaultFilterRange cannot match");
+    switch (defaultFilterRange) {
+      case ALL:
+        return !MatchUtils.matcher(ignored, uri, method);
+      case NONE:
+        return MatchUtils.matcher(only, uri, method);
+      default:
+        throw new RateLimiterException(
+            "rate limiter configuration defaultFilterRange cannot match");
     }
   }
 

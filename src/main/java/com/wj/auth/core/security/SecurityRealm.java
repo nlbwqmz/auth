@@ -1,7 +1,7 @@
 package com.wj.auth.core.security;
 
+import com.wj.auth.common.AuthHelper;
 import com.wj.auth.core.security.configuration.AuthHandlerEntity;
-import com.wj.auth.core.security.configuration.RequestVerification;
 import java.util.Set;
 
 /**
@@ -22,7 +22,7 @@ public interface SecurityRealm {
    *
    * @return 免登录 Patterns 集合
    */
-  default RequestVerification addAnonPatterns() {
+  default Set<AuthHelper> addAnonPatterns() {
     return null;
   }
 
@@ -31,7 +31,7 @@ public interface SecurityRealm {
    *
    * @return 权限验证 Patterns 集合
    */
-  default Set<RequestVerification> addAuthPatterns() {
+  default Set<AuthHelper> addAuthPatterns() {
     return null;
   }
 

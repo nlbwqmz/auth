@@ -1,7 +1,7 @@
 package com.wj.auth.utils;
 
 import com.google.common.collect.Sets;
-import com.wj.auth.core.security.configuration.RequestVerification;
+import com.wj.auth.common.AuthHelper;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -26,19 +26,19 @@ public class MatchUtils {
     return false;
   }
 
-  public static boolean matcher(@NonNull RequestVerification requestVerification, String uri,
+  public static boolean matcher(@NonNull AuthHelper authHelper, String uri,
       String method) {
-    Set<String> patterns = Optional.ofNullable(requestVerification.getPatterns()).orElse(
+    Set<String> patterns = Optional.ofNullable(authHelper.getPatterns()).orElse(
         Sets.newHashSet());
-    Set<String> methods = Optional.ofNullable(requestVerification.getMethods()).orElse(
+    Set<String> methods = Optional.ofNullable(authHelper.getMethods()).orElse(
         Sets.newHashSet());
     return matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || CollectionUtils.containsIgnoreCase(methods, method));
   }
 
-  public static boolean matcher(@NonNull Set<RequestVerification> set, String uri,
+  public static boolean matcher(@NonNull Set<AuthHelper> set, String uri,
       String method) {
     if(CollectionUtils.isNotBlank(set)){
-      for(RequestVerification item:set){
+      for(AuthHelper item:set){
         if(matcher(item, uri, method)){
           return true;
         }

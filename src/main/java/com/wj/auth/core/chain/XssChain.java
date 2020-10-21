@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.html.HtmlEscapers;
+import com.wj.auth.common.AuthHelper;
 import com.wj.auth.common.FilterRange;
 import com.wj.auth.common.SubjectManager;
 import com.wj.auth.configuration.AuthAutoConfiguration;
 import com.wj.auth.configuration.XssConfiguration;
-import com.wj.auth.core.security.configuration.RequestVerification;
 import com.wj.auth.core.xss.XssRequestWrapper;
 import com.wj.auth.exception.xss.XssException;
 import com.wj.auth.utils.CollectionUtils;
@@ -36,8 +36,8 @@ import org.springframework.stereotype.Component;
 public class XssChain extends JsonSerializer<String> implements Chain {
 
   private final XssConfiguration xssConfiguration;
-  private ImmutableSet<RequestVerification> xssIgnored;
-  private ImmutableSet<RequestVerification> xssOnly;
+  private ImmutableSet<AuthHelper> xssIgnored;
+  private ImmutableSet<AuthHelper> xssOnly;
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
@@ -45,16 +45,17 @@ public class XssChain extends JsonSerializer<String> implements Chain {
     this.xssConfiguration = authAutoConfiguration.getXss();
   }
 
-  public void setXss(Set<RequestVerification> xssSet, Set<RequestVerification> xssIgnoredSet) {
+  public void setXss(Set<AuthHelper> xssSet, Set<AuthHelper> xssIgnoredSet) {
     Set<String> only = xssConfiguration.getOnly();
     Set<String> ignored = xssConfiguration.getIgnored();
     if (CollectionUtils.isNotBlank(only)) {
       xssSet.add(
-          RequestVerification.build().setPatterns(CollectionUtils.addUrlPrefix(only, contextPath)));
+          AuthHelper.otherBuilder().setPatterns(CollectionUtils.addUrlPrefix(only, contextPath))
+              .build());
     }
     if (CollectionUtils.isNotBlank(ignored)) {
-      xssIgnoredSet.add(RequestVerification.build()
-          .setPatterns(CollectionUtils.addUrlPrefix(ignored, contextPath)));
+      xssIgnoredSet.add(AuthHelper.otherBuilder()
+          .setPatterns(CollectionUtils.addUrlPrefix(ignored, contextPath)).build());
     }
     xssOnly = ImmutableSet.copyOf(xssSet);
     xssIgnored = ImmutableSet.copyOf(xssIgnoredSet);
@@ -97,10 +98,13 @@ public class XssChain extends JsonSerializer<String> implements Chain {
     FilterRange defaultFilterRange = xssConfiguration.getDefaultFilterRange();
     String uri = request.getRequestURI();
     String method = request.getMethod();
-    switch (defaultFilterRange){
-      case ALL:return !MatchUtils.matcher(xssIgnored, uri, method);
-      case NONE:return MatchUtils.matcher(xssOnly, request.getRequestURI(), request.getMethod());
-      default:throw new XssException("xss configuration defaultFilterRange cannot match");
+    switch (defaultFilterRange) {
+      case ALL:
+        return !MatchUtils.matcher(xssIgnored, uri, method);
+      case NONE:
+        return MatchUtils.matcher(xssOnly, request.getRequestURI(), request.getMethod());
+      default:
+        throw new XssException("xss configuration defaultFilterRange cannot match");
     }
   }
 
