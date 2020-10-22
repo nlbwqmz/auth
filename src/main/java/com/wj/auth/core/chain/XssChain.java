@@ -95,16 +95,20 @@ public class XssChain extends JsonSerializer<String> implements Chain {
    * @return
    */
   private boolean isDoXss(HttpServletRequest request) {
-    FilterRange defaultFilterRange = xssConfiguration.getDefaultFilterRange();
-    String uri = request.getRequestURI();
-    String method = request.getMethod();
-    switch (defaultFilterRange) {
-      case ALL:
-        return !MatchUtils.matcher(xssIgnored, uri, method);
-      case NONE:
-        return MatchUtils.matcher(xssOnly, request.getRequestURI(), request.getMethod());
-      default:
-        throw new XssException("xss configuration defaultFilterRange cannot match");
+    if (request != null) {
+      FilterRange defaultFilterRange = xssConfiguration.getDefaultFilterRange();
+      String uri = request.getRequestURI();
+      String method = request.getMethod();
+      switch (defaultFilterRange) {
+        case ALL:
+          return !MatchUtils.matcher(xssIgnored, uri, method);
+        case NONE:
+          return MatchUtils.matcher(xssOnly, request.getRequestURI(), request.getMethod());
+        default:
+          throw new XssException("xss configuration defaultFilterRange cannot match");
+      }
+    } else {
+      return false;
     }
   }
 
