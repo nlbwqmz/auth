@@ -67,13 +67,7 @@ public class AuthTokenGenerate {
 
   @PostConstruct
   public void init() {
-    AlgorithmEnum algorithmEnum;
-    try {
-      algorithmEnum = AlgorithmEnum.valueOf(tokenConfiguration.getAlgorithm());
-    } catch (IllegalArgumentException e) {
-      throw new TokenFactoryInitException(
-          String.format("The algorithm %s is not supported", tokenConfiguration.getAlgorithm()));
-    }
+    AlgorithmEnum algorithmEnum = tokenConfiguration.getAlgorithm();
     switch (algorithmEnum) {
       case HMAC256:
         initHMAC256();
@@ -126,7 +120,7 @@ public class AuthTokenGenerate {
   private void validThisTimeInit() {
     KeyPairGenerator keyPairGen = null;
     try {
-      keyPairGen = KeyPairGenerator.getInstance(tokenConfiguration.getAlgorithm());
+      keyPairGen = KeyPairGenerator.getInstance(tokenConfiguration.getAlgorithm().name());
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
       throw new TokenFactoryInitException();

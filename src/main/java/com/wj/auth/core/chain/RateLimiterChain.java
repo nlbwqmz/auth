@@ -18,6 +18,7 @@ import com.wj.auth.utils.MatchUtils;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
@@ -130,10 +131,31 @@ public class RateLimiterChain implements Chain {
   }
 
   /**
-   * TODO 获取IP地址
+   * 获取IP地址
    */
   private String getIp() {
-    return "";
+    HttpServletRequest request = SubjectManager.getRequest();
+    String ipAddress = null;
+    ipAddress = request.getHeader("x-forwarded-for");
+    if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+      ipAddress = request.getHeader("Proxy-Client-IP");
+    }
+    if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+      ipAddress = request.getHeader("WL-Proxy-Client-IP");
+    }
+    if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+      ipAddress = request.getRemoteAddr();
+      /*if (ipAddress.equals("127.0.0.1")) {
+        InetAddress inetAddress = InetAddress.getLocalHost();
+        ipAddress = inetAddress.getHostAddress();
+      }*/
+    }
+    if (ipAddress != null && ipAddress.length() > 15) {
+      if (ipAddress.indexOf(",") > 0) {
+        ipAddress = ipAddress.substring(0, ipAddress.indexOf(","));
+      }
+    }
+    return "0:0:0:0:0:0:0:1".equals(ipAddress) ? "127.0.0.1" : ipAddress;
   }
 
 

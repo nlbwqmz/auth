@@ -2,7 +2,8 @@ package com.wj.auth.configuration;
 
 /**
  * 跨域配置
- * @Author 魏杰
+ *
+ * @author 魏杰
  * @since 2020/10/15
  */
 public class CorsConfiguration {

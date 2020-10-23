@@ -21,12 +21,14 @@ public class ErrorController {
 
   @RequestMapping("error")
   public void error(HttpServletRequest request) {
-    RuntimeException error = (RuntimeException) request.getAttribute(AuthAutoConfiguration.ERROR_ATTRIBUTE);
+    RuntimeException error = (RuntimeException) request
+        .getAttribute(AuthAutoConfiguration.ERROR_ATTRIBUTE);
     request.removeAttribute("authError");
-    if(error instanceof AuthException){
+    if (error instanceof AuthException) {
       throw error;
     } else {
-      throw new AuthException(String.format("%s: %s", error.getClass().toString().substring(6), error.getMessage()));
+      throw new AuthException(
+          String.format("%s: %s", error.getClass().toString().substring(6), error.getMessage()));
     }
   }
 }

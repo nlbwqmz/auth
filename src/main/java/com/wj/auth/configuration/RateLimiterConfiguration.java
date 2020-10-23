@@ -18,7 +18,7 @@ public class RateLimiterConfiguration {
   /**
    * 阈值
    */
-  private double threshold = 5;
+  private double threshold = 20;
 
   /**
    * 忽略

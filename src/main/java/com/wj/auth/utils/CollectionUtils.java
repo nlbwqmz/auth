@@ -13,12 +13,10 @@ import java.util.Set;
 public class CollectionUtils {
 
 
-
   /**
    * 集合是否为空
    *
    * @param collection
-   * @return
    */
   public static boolean isBlank(Collection collection) {
     return collection == null || collection.isEmpty();
@@ -53,7 +51,6 @@ public class CollectionUtils {
     }
     return false;
   }
-
 
 
 }

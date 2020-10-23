@@ -1,7 +1,10 @@
 package com.wj.auth.configuration;
 
+import com.wj.auth.core.security.configuration.AlgorithmEnum;
+
 /**
  * token配置
+ *
  * @author weijie
  * @since 2020/9/27
  */
@@ -10,7 +13,7 @@ public class TokenConfiguration {
   /**
    * 加密方法
    */
-  private String algorithm = "HMAC256";
+  private AlgorithmEnum algorithm = AlgorithmEnum.HMAC256;
   /**
    * 密码
    */
@@ -24,11 +27,11 @@ public class TokenConfiguration {
    */
   private String issuer = "nlbwqmz.github.io";
 
-  public String getAlgorithm() {
+  public AlgorithmEnum getAlgorithm() {
     return algorithm;
   }
 
-  public void setAlgorithm(String algorithm) {
+  public void setAlgorithm(AlgorithmEnum algorithm) {
     this.algorithm = algorithm;
   }
 

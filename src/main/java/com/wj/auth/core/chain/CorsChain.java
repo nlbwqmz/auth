@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  */
 @Order(2)
 @Component
-public class CorsChain implements Chain{
+public class CorsChain implements Chain {
 
   private final AuthAutoConfiguration authAutoConfiguration;
 
@@ -26,9 +26,12 @@ public class CorsChain implements Chain{
     HttpServletResponse response = SubjectManager.getResponse();
     CorsConfiguration corsConfiguration = authAutoConfiguration.getCors();
     if (corsConfiguration.isEnabled()) {
-      response.setHeader("Access-Control-Allow-Origin", corsConfiguration.getAccessControlAllowOrigin());
-      response.setHeader("Access-Control-Allow-Headers", corsConfiguration.getAccessControlAllowHeaders());
-      response.setHeader("Access-Control-Allow-Methods", corsConfiguration.getAccessControlAllowMethods());
+      response.setHeader("Access-Control-Allow-Origin",
+          corsConfiguration.getAccessControlAllowOrigin());
+      response.setHeader("Access-Control-Allow-Headers",
+          corsConfiguration.getAccessControlAllowHeaders());
+      response.setHeader("Access-Control-Allow-Methods",
+          corsConfiguration.getAccessControlAllowMethods());
       response.setHeader("Access-Control-Allow-Credentials",
           String.valueOf(corsConfiguration.getAccessControlAllowCredentials()));
       response.setHeader("Access-Control-Max-Age", corsConfiguration.getAccessControlMaxAge());

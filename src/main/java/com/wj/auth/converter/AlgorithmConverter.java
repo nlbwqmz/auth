@@ -1,6 +1,6 @@
 package com.wj.auth.converter;
 
-import com.wj.auth.configuration.RateLimiterConfiguration.Strategy;
+import com.wj.auth.core.security.configuration.AlgorithmEnum;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 
@@ -11,10 +11,10 @@ import org.springframework.core.convert.converter.Converter;
  * @since 2020/10/16
  */
 @Configuration
-public class RateLimiterConverter implements Converter<String, Strategy> {
+public class AlgorithmConverter implements Converter<String, AlgorithmEnum> {
 
   @Override
-  public Strategy convert(String source) {
-    return Strategy.valueOf(source);
+  public AlgorithmEnum convert(String source) {
+    return AlgorithmEnum.valueOf(source);
   }
 }

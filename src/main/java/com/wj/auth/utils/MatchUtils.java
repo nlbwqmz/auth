@@ -13,6 +13,7 @@ import org.springframework.util.AntPathMatcher;
  * @since 2020/10/19
  */
 public class MatchUtils {
+
   private final static AntPathMatcher antPathMatcher = new AntPathMatcher();
 
   public static boolean matcher(@NonNull Set<String> patterns, String uri) {
@@ -32,14 +33,15 @@ public class MatchUtils {
         Sets.newHashSet());
     Set<String> methods = Optional.ofNullable(authHelper.getMethods()).orElse(
         Sets.newHashSet());
-    return matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || CollectionUtils.containsIgnoreCase(methods, method));
+    return matcher(patterns, uri) && (CollectionUtils.isBlank(methods) || CollectionUtils
+        .containsIgnoreCase(methods, method));
   }
 
   public static boolean matcher(@NonNull Set<AuthHelper> set, String uri,
       String method) {
-    if(CollectionUtils.isNotBlank(set)){
-      for(AuthHelper item:set){
-        if(matcher(item, uri, method)){
+    if (CollectionUtils.isNotBlank(set)) {
+      for (AuthHelper item : set) {
+        if (matcher(item, uri, method)) {
           return true;
         }
       }

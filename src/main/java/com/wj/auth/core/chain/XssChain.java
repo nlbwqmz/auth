@@ -92,7 +92,6 @@ public class XssChain extends JsonSerializer<String> implements Chain {
    * 是否执行xss过滤
    *
    * @param request
-   * @return
    */
   private boolean isDoXss(HttpServletRequest request) {
     if (request != null) {
