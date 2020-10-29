@@ -19,9 +19,9 @@ public class XssConfiguration {
    */
   private boolean bodyEnable = false;
   /**
-   * 默认过滤范围
+   * 过滤范围
    */
-  private FilterRange defaultFilterRange = FilterRange.ALL;
+  private FilterRange filterRange = FilterRange.ALL;
   /**
    * 若only为空，则ignored中包含的路由不进行XSS过滤，其他路由正常过滤 若only不为空，则ignored失效
    */
@@ -64,11 +64,11 @@ public class XssConfiguration {
     this.only = only;
   }
 
-  public FilterRange getDefaultFilterRange() {
-    return defaultFilterRange;
+  public FilterRange getFilterRange() {
+    return filterRange;
   }
 
-  public void setDefaultFilterRange(FilterRange defaultFilterRange) {
-    this.defaultFilterRange = defaultFilterRange;
+  public void setFilterRange(FilterRange filterRange) {
+    this.filterRange = filterRange;
   }
 }

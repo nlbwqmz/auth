@@ -113,7 +113,7 @@ public class Run implements ApplicationRunner {
   private void initXss(Method method, Set<String> patterns, Set<String> methods) {
     XssConfiguration xssConfiguration = authAutoConfiguration.getXss();
     if (xssConfiguration.isQueryEnable() || xssConfiguration.isBodyEnable()) {
-      FilterRange defaultFilterRange = xssConfiguration.getDefaultFilterRange();
+      FilterRange defaultFilterRange = xssConfiguration.getFilterRange();
       if (defaultFilterRange == FilterRange.ALL && hasAnnotation(method, XssIgnored.class)) {
         xssIgnoredSet
             .add(AuthHelper.otherBuilder().setPatterns(patterns).setMethods(methods).build());
