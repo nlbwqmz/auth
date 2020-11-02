@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
  */
 @Order(3)
 @Component
-public class XssChain extends JsonSerializer<String> implements Chain {
+public class XssChain implements Chain {
 
   private final XssConfiguration xssConfiguration;
   private ImmutableSet<AuthHelper> xssIgnored;
@@ -63,28 +63,11 @@ public class XssChain extends JsonSerializer<String> implements Chain {
 
   @Override
   public void doFilter(ChainManager chain) {
-    if (xssConfiguration.isQueryEnable()) {
-      HttpServletRequest request = SubjectManager.getRequest();
-      if (isDoXss(request)) {
-        SubjectManager.setRequest(new XssRequestWrapper(request));
-      }
+    HttpServletRequest request = SubjectManager.getRequest();
+    if (xssConfiguration.isQueryEnable() && isDoXss(request)) {
+      SubjectManager.setRequest(new XssRequestWrapper(request));
     } else {
       chain.doAuth();
-    }
-  }
-
-  @Override
-  public Class<String> handledType() {
-    return String.class;
-  }
-
-  @Override
-  public void serialize(String value, JsonGenerator jsonGenerator,
-      SerializerProvider serializerProvider) throws IOException {
-    if (xssConfiguration.isBodyEnable() && isDoXss(SubjectManager.getRequest()) && value != null) {
-      jsonGenerator.writeString(HtmlEscapers.htmlEscaper().escape(value));
-    } else {
-      jsonGenerator.writeString(value);
     }
   }
 
@@ -120,7 +103,23 @@ public class XssChain extends JsonSerializer<String> implements Chain {
   public ObjectMapper xssBody(Jackson2ObjectMapperBuilder builder) {
     ObjectMapper objectMapper = builder.createXmlMapper(false).build();
     SimpleModule xssModule = new SimpleModule("xssSerializer");
-    xssModule.addSerializer(this);
+    xssModule.addSerializer(new JsonSerializer<String>() {
+      @Override
+      public void serialize(String value, JsonGenerator jsonGenerator,
+          SerializerProvider serializerProvider) throws IOException {
+        if (xssConfiguration.isBodyEnable() && isDoXss(SubjectManager.getRequest())
+            && value != null) {
+          jsonGenerator.writeString(HtmlEscapers.htmlEscaper().escape(value));
+        } else {
+          jsonGenerator.writeString(value);
+        }
+      }
+
+      @Override
+      public Class<String> handledType() {
+        return String.class;
+      }
+    });
     objectMapper.registerModule(xssModule);
     return objectMapper;
   }

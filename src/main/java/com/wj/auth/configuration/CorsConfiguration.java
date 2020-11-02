@@ -13,8 +13,8 @@ public class CorsConfiguration {
   private String[] accessControlAllowHeaders = new String[]{"*"};
   private String[] accessControlAllowMethods
       = new String[]{"PUT", "POST", "GET", "DELETE", "OPTIONS"};
-  private boolean accessControlAllowCredentials = false;
-  private long accessControlMaxAge = 1800;
+  private Boolean accessControlAllowCredentials = false;
+  private Long accessControlMaxAge = 1800L;
 
   public boolean isEnabled() {
     return enabled;
@@ -48,19 +48,19 @@ public class CorsConfiguration {
     this.accessControlAllowMethods = accessControlAllowMethods;
   }
 
-  public boolean isAccessControlAllowCredentials() {
+  public Boolean isAccessControlAllowCredentials() {
     return accessControlAllowCredentials;
   }
 
-  public void setAccessControlAllowCredentials(boolean accessControlAllowCredentials) {
+  public void setAccessControlAllowCredentials(Boolean accessControlAllowCredentials) {
     this.accessControlAllowCredentials = accessControlAllowCredentials;
   }
 
-  public long getAccessControlMaxAge() {
+  public Long getAccessControlMaxAge() {
     return accessControlMaxAge;
   }
 
-  public void setAccessControlMaxAge(long accessControlMaxAge) {
+  public void setAccessControlMaxAge(Long accessControlMaxAge) {
     this.accessControlMaxAge = accessControlMaxAge;
   }
 }
