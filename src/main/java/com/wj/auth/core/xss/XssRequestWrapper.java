@@ -3,6 +3,7 @@ package com.wj.auth.core.xss;
 import com.google.common.base.Strings;
 import com.google.common.html.HtmlEscapers;
 import com.wj.auth.exception.xss.XssException;
+import com.wj.auth.utils.JacksonUtils;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -108,7 +109,7 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
         }
       }
     }
-    return XssObjectMapper.doXss(sb.toString());
+    return JacksonUtils.jsonStringDoXss(sb.toString());
   }
 
 
