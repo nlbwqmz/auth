@@ -59,7 +59,7 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
     ServletInputStream servletInputStream = super.getInputStream();
     if (bodyEnable) {
       final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-          inputHandlers(servletInputStream).getBytes());
+          doXss(servletInputStream).getBytes());
       return new ServletInputStream() {
         @Override
         public int read() throws IOException {
@@ -86,7 +86,7 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
     }
   }
 
-  public String inputHandlers(ServletInputStream servletInputStream) {
+  public String doXss(ServletInputStream servletInputStream) {
     StringBuilder sb = new StringBuilder();
     try (BufferedReader reader = new BufferedReader(
         new InputStreamReader(servletInputStream, Charset.forName("UTF-8")))) {
