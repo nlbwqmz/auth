@@ -36,5 +36,6 @@ public class CorsChain implements Chain {
         Joiner.on(",").join(corsConfiguration.getAccessControlAllowOrigin()));
     response.setHeader(HttpHeaders.ACCESS_CONTROL_MAX_AGE,
         corsConfiguration.getAccessControlMaxAge().toString());
+    chain.doAuth();
   }
 }

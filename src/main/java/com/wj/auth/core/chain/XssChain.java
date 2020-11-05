@@ -1,12 +1,6 @@
 package com.wj.auth.core.chain;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.html.HtmlEscapers;
 import com.wj.auth.common.AuthHelper;
 import com.wj.auth.common.FilterRange;
 import com.wj.auth.common.SubjectManager;
@@ -16,15 +10,10 @@ import com.wj.auth.core.xss.XssRequestWrapper;
 import com.wj.auth.exception.xss.XssException;
 import com.wj.auth.utils.CollectionUtils;
 import com.wj.auth.utils.MatchUtils;
-import java.io.IOException;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -64,11 +53,11 @@ public class XssChain implements Chain {
   @Override
   public void doFilter(ChainManager chain) {
     HttpServletRequest request = SubjectManager.getRequest();
-    if (xssConfiguration.isQueryEnable() && isDoXss(request)) {
-      SubjectManager.setRequest(new XssRequestWrapper(request));
-    } else {
-      chain.doAuth();
+    if (isDoXss(request)) {
+      SubjectManager.setRequest(new XssRequestWrapper(request, xssConfiguration.isQueryEnable(),
+          xssConfiguration.isBodyEnable()));
     }
+    chain.doAuth();
   }
 
   /**
@@ -92,35 +81,5 @@ public class XssChain implements Chain {
     } else {
       return false;
     }
-  }
-
-  /**
-   * body XssConfiguration 转义
-   */
-  @Bean
-  @Primary
-  @ConditionalOnProperty(prefix = "auth.xss", name = "body-enable", havingValue = "true")
-  public ObjectMapper xssBody(Jackson2ObjectMapperBuilder builder) {
-    ObjectMapper objectMapper = builder.createXmlMapper(false).build();
-    SimpleModule xssModule = new SimpleModule("xssSerializer");
-    xssModule.addSerializer(new JsonSerializer<String>() {
-      @Override
-      public void serialize(String value, JsonGenerator jsonGenerator,
-          SerializerProvider serializerProvider) throws IOException {
-        if (xssConfiguration.isBodyEnable() && isDoXss(SubjectManager.getRequest())
-            && value != null) {
-          jsonGenerator.writeString(HtmlEscapers.htmlEscaper().escape(value));
-        } else {
-          jsonGenerator.writeString(value);
-        }
-      }
-
-      @Override
-      public Class<String> handledType() {
-        return String.class;
-      }
-    });
-    objectMapper.registerModule(xssModule);
-    return objectMapper;
   }
 }
