@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author weijie
- * @since 2020/9/18
+ * @author 魏杰
+ * @since 0.0.1
  */
 public class AuthInterceptorHandler implements InterceptorHandler {
 

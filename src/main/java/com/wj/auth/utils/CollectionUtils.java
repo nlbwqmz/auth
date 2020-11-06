@@ -7,8 +7,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * @author weijie
- * @since 2020/9/18
+ * @author 魏杰
+ * @since 0.0.1
  */
 public class CollectionUtils {
 

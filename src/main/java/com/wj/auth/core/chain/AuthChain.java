@@ -1,11 +1,11 @@
 package com.wj.auth.core.chain;
 
 /**
- * @author weijie
- * @since 2020/10/16
+ * @author 魏杰
+ * @since 0.0.1
  */
 @FunctionalInterface
-public interface Chain {
+public interface AuthChain {
 
   /**
    * 过滤

@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 
 /**
- * @author weijie
- * @since 2020/10/19
+ * @author 魏杰
+ * @since 0.0.1
  */
 @Configuration
 public class FilterRangeConverter implements Converter<String, FilterRange> {

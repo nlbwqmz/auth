@@ -5,7 +5,7 @@ import java.util.Set;
 
 /**
  * @author 魏杰
- * @since 2020/10/13
+ * @since 0.0.1
  */
 public class XssConfiguration {
 

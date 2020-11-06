@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * 线程变量
  *
- * @author weijie
- * @since 2020/9/14
+ * @author 魏杰
+ * @since 0.0.1
  */
 public class SubjectManager {
 

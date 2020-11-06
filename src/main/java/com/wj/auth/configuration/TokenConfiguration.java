@@ -5,8 +5,8 @@ import com.wj.auth.core.security.configuration.AlgorithmEnum;
 /**
  * token配置
  *
- * @author weijie
- * @since 2020/9/27
+ * @author 魏杰
+ * @since 0.0.1
  */
 public class TokenConfiguration {
 

@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 /**
  * 免登录
  *
- * @author weijie
- * @since 2020/9/11
+ * @author 魏杰
+ * @since 0.0.1
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

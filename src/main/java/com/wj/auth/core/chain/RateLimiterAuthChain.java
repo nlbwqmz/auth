@@ -25,12 +25,12 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
- * @author weijie
- * @since 2020/10/16
+ * @author 魏杰
+ * @since 0.0.1
  */
 @Order(1)
 @Component
-public class RateLimiterChain implements Chain {
+public class RateLimiterAuthChain implements AuthChain {
 
   private final RateLimiterConfiguration rateLimiterConfiguration;
   private final RateLimiter rateLimiter;
@@ -41,7 +41,7 @@ public class RateLimiterChain implements Chain {
   private ImmutableSet<AuthHelper> ignored;
   private ImmutableSet<AuthHelper> only;
 
-  public RateLimiterChain(AuthAutoConfiguration authAutoConfiguration,
+  public RateLimiterAuthChain(AuthAutoConfiguration authAutoConfiguration,
       @Autowired(required = false) RateLimiterCondition rateLimiterCondition) {
     this.rateLimiterConfiguration = authAutoConfiguration.getRateLimiter();
     this.rateLimiterCondition = rateLimiterCondition;

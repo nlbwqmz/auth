@@ -1,7 +1,7 @@
 package com.wj.auth.core.filter;
 
 import com.wj.auth.common.SubjectManager;
-import com.wj.auth.core.chain.Chain;
+import com.wj.auth.core.chain.AuthChain;
 import com.wj.auth.core.chain.ChainManager;
 import java.io.IOException;
 import java.util.List;
@@ -18,17 +18,17 @@ import org.springframework.core.annotation.Order;
 /**
  * 过滤器
  *
- * @author weijie
- * @since 2020/10/14
+ * @author 魏杰
+ * @since 0.0.1
  */
 @Order(0)
 @WebFilter(filterName = "authFilter", urlPatterns = "/*")
 public class AuthFilter implements Filter {
 
-  private final List<Chain> chains;
+  private final List<AuthChain> authChains;
 
-  public AuthFilter(List<Chain> chains) {
-    this.chains = chains;
+  public AuthFilter(List<AuthChain> authChains) {
+    this.authChains = authChains;
   }
 
   @Override
@@ -37,7 +37,7 @@ public class AuthFilter implements Filter {
     try {
       SubjectManager.setRequest((HttpServletRequest) request);
       SubjectManager.setResponse((HttpServletResponse) response);
-      new ChainManager(chains).doAuth();
+      new ChainManager(authChains).doAuth();
       chain.doFilter(SubjectManager.getRequest(), SubjectManager.getResponse());
     } catch (Exception e) {
       SubjectManager.getRequest().setAttribute("authError", e);

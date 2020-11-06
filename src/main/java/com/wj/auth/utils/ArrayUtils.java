@@ -4,8 +4,8 @@ import com.google.common.base.Strings;
 import java.util.Optional;
 
 /**
- * @author weijie
- * @since 2020/10/15
+ * @author 魏杰
+ * @since 0.0.1
  */
 public class ArrayUtils {
 

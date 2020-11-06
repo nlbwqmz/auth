@@ -7,8 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.lang.Nullable;
 
 /**
- * @author weijie
- * @since 2020/9/18
+ * @author 魏杰
+ * @since 0.0.1
  */
 public interface InterceptorHandler {
 

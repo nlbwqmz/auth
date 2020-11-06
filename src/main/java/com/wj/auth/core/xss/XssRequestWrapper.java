@@ -15,8 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 /**
- * @author weijie
- * @since 2020/10/13
+ * @author 魏杰
+ * @since 0.0.1
  */
 public class XssRequestWrapper extends HttpServletRequestWrapper {
 
@@ -61,27 +61,7 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
     if (bodyEnable) {
       final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
           doXss(servletInputStream).getBytes());
-      return new ServletInputStream() {
-        @Override
-        public int read() throws IOException {
-          return byteArrayInputStream.read();
-        }
-
-        @Override
-        public boolean isFinished() {
-          return false;
-        }
-
-        @Override
-        public boolean isReady() {
-          return false;
-        }
-
-        @Override
-        public void setReadListener(ReadListener listener) {
-
-        }
-      };
+      return createServletInputStream(byteArrayInputStream);
     } else {
       return servletInputStream;
     }
@@ -110,6 +90,30 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
       }
     }
     return JacksonUtils.jsonStringDoXss(sb.toString());
+  }
+
+  private ServletInputStream createServletInputStream(ByteArrayInputStream byteArrayInputStream) {
+    return new ServletInputStream() {
+      @Override
+      public int read() throws IOException {
+        return byteArrayInputStream.read();
+      }
+
+      @Override
+      public boolean isFinished() {
+        return false;
+      }
+
+      @Override
+      public boolean isReady() {
+        return false;
+      }
+
+      @Override
+      public void setReadListener(ReadListener listener) {
+
+      }
+    };
   }
 
 

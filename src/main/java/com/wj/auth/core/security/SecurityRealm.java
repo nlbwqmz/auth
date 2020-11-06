@@ -5,8 +5,8 @@ import com.wj.auth.core.security.configuration.AuthHandlerEntity;
 import java.util.Set;
 
 /**
- * @author weijie
- * @since 2020/10/9
+ * @author 魏杰
+ * @since 0.0.1
  */
 public interface SecurityRealm {
 

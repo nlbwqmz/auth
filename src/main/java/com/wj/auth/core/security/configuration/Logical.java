@@ -1,8 +1,8 @@
 package com.wj.auth.core.security.configuration;
 
 /**
- * @author weijie
- * @since 2020/10/15
+ * @author 魏杰
+ * @since 0.0.1
  */
 public enum Logical {
   AND, OR

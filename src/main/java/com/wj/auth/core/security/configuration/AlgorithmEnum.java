@@ -3,8 +3,8 @@ package com.wj.auth.core.security.configuration;
 /**
  * token所支持的算法
  *
- * @author weijie
- * @since 2020/9/15
+ * @author 魏杰
+ * @since 0.0.1
  */
 public enum AlgorithmEnum {
   RSA,

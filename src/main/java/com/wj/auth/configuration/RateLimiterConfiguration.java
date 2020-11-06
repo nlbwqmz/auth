@@ -6,8 +6,8 @@ import java.util.Set;
 /**
  * 限流配置
  *
- * @author weijie
- * @since 2020/10/16
+ * @author 魏杰
+ * @since 0.0.1
  */
 public class RateLimiterConfiguration {
 

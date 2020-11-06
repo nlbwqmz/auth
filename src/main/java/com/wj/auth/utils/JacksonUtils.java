@@ -15,7 +15,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 /**
  * @author 魏杰
- * @since 2020/5/3
+ * @since 0.0.1
  */
 public class JacksonUtils {
 

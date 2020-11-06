@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author 魏杰
- * @since 2020/9/18
+ * @since 0.0.1
  */
 public class AuthcInterceptorHandler implements InterceptorHandler {
 

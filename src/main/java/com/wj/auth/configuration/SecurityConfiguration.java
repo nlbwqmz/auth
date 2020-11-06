@@ -4,8 +4,8 @@ import java.util.Set;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
- * @author weijie
- * @since 2020/10/16
+ * @author 魏杰
+ * @since 0.0.1
  */
 public class SecurityConfiguration {
 

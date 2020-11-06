@@ -1,7 +1,7 @@
 package com.wj.auth.configuration;
 
 import com.wj.auth.configuration.RateLimiterConfiguration.Strategy;
-import com.wj.auth.core.Run;
+import com.wj.auth.core.AuthRun;
 import com.wj.auth.core.rateLimiter.RateLimiterCondition;
 import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.exception.rate.RateLimiterException;
@@ -17,12 +17,12 @@ import org.springframework.context.annotation.Import;
 /**
  * Auth 配置类
  *
- * @author weijie
- * @since 2020/9/27
+ * @author 魏杰
+ * @since 0.0.1
  */
 @Configuration
 @ConfigurationProperties(AuthAutoConfiguration.AUTH_PREFIX)
-@Import(Run.class)
+@Import(AuthRun.class)
 public class AuthAutoConfiguration implements InitializingBean {
 
   public final static String AUTH_PREFIX = "auth";

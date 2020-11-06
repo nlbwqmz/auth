@@ -13,9 +13,9 @@ import com.wj.auth.configuration.AuthAutoConfiguration;
 import com.wj.auth.configuration.RateLimiterConfiguration;
 import com.wj.auth.configuration.SecurityConfiguration;
 import com.wj.auth.configuration.XssConfiguration;
-import com.wj.auth.core.chain.RateLimiterChain;
-import com.wj.auth.core.chain.SecurityChain;
-import com.wj.auth.core.chain.XssChain;
+import com.wj.auth.core.chain.RateLimiterAuthChain;
+import com.wj.auth.core.chain.SecurityAuthChain;
+import com.wj.auth.core.chain.XssAuthChain;
 import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.exception.AuthInitException;
 import com.wj.auth.utils.ArrayUtils;
@@ -37,19 +37,19 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
- * @author weijie
- * @since 2020/9/14
+ * @author 魏杰
+ * @since 0.0.1
  */
 @ConditionalOnBean(SecurityRealm.class)
 @ServletComponentScan("com.wj.auth")
 @ComponentScan("com.wj.auth")
-public class Run implements ApplicationRunner {
+public class AuthRun implements ApplicationRunner {
 
   private final RequestMappingHandlerMapping mapping;
   private final AuthAutoConfiguration authAutoConfiguration;
-  private final SecurityChain securityChain;
-  private final XssChain xssChain;
-  private final RateLimiterChain rateLimiterChain;
+  private final SecurityAuthChain securityChain;
+  private final XssAuthChain xssChain;
+  private final RateLimiterAuthChain rateLimiterChain;
   Set<AuthHelper> authSet = Sets.newHashSet();
   Set<AuthHelper> anonSet = Sets.newHashSet();
   Set<AuthHelper> authcSet = Sets.newHashSet();
@@ -60,11 +60,11 @@ public class Run implements ApplicationRunner {
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
-  public Run(RequestMappingHandlerMapping mapping,
+  public AuthRun(RequestMappingHandlerMapping mapping,
       AuthAutoConfiguration authAutoConfiguration,
-      SecurityChain securityChain,
-      XssChain xssChain,
-      RateLimiterChain rateLimiterChain) {
+      SecurityAuthChain securityChain,
+      XssAuthChain xssChain,
+      RateLimiterAuthChain rateLimiterChain) {
     this.mapping = mapping;
     this.authAutoConfiguration = authAutoConfiguration;
     this.securityChain = securityChain;

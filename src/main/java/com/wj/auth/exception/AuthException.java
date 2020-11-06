@@ -1,8 +1,8 @@
 package com.wj.auth.exception;
 
 /**
- * @author weijie
- * @since 2020/9/30
+ * @author 魏杰
+ * @since 0.0.1
  */
 public class AuthException extends RuntimeException {
 

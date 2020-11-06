@@ -10,16 +10,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 /**
- * @author weijie
- * @since 2020/11/2
+ * @author 魏杰
+ * @since 0.0.1
  */
 @Order(2)
 @Component
-public class CorsChain implements Chain {
+public class CorsAuthChain implements AuthChain {
 
   private final CorsConfiguration corsConfiguration;
 
-  public CorsChain(AuthAutoConfiguration authAutoConfiguration) {
+  public CorsAuthChain(AuthAutoConfiguration authAutoConfiguration) {
     corsConfiguration = authAutoConfiguration.getCors();
   }
 

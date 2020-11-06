@@ -4,7 +4,7 @@ import com.wj.auth.common.AuthHelper;
 import com.wj.auth.common.SubjectManager;
 import com.wj.auth.configuration.AuthAutoConfiguration;
 import com.wj.auth.configuration.SecurityConfiguration;
-import com.wj.auth.core.Login;
+import com.wj.auth.core.AuthLogin;
 import com.wj.auth.core.security.AuthTokenGenerate;
 import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.core.security.configuration.AuthHandlerEntity;
@@ -29,29 +29,29 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
- * @author weijie
- * @since 2020/10/16
+ * @author 魏杰
+ * @since 0.0.1
  */
 @Order(0)
 @Component
-public class SecurityChain implements Chain {
+public class SecurityAuthChain implements AuthChain {
 
   private final SecurityConfiguration securityConfiguration;
   private final AuthTokenGenerate authTokenGenerate;
   private final SecurityRealm securityRealm;
-  private final Login login;
+  private final AuthLogin authLogin;
   private List<AuthHandlerEntity> handlers = new ArrayList<>();
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
-  public SecurityChain(AuthAutoConfiguration authAutoConfiguration,
+  public SecurityAuthChain(AuthAutoConfiguration authAutoConfiguration,
       AuthTokenGenerate authTokenGenerate,
       SecurityRealm securityRealm,
-      Login login) {
+      AuthLogin authLogin) {
     this.securityConfiguration = authAutoConfiguration.getSecurity();
     this.authTokenGenerate = authTokenGenerate;
     this.securityRealm = securityRealm;
-    this.login = login;
+    this.authLogin = authLogin;
   }
 
   @Override
@@ -70,7 +70,7 @@ public class SecurityChain implements Chain {
       if (handler.isRefreshToken()) {
         Object subject = SubjectManager.getSubject();
         long expire = SubjectManager.getExpire();
-        login.doLogin(subject, expire);
+        authLogin.doLogin(subject, expire);
       }
       if (handler.isAuthorize() && !handler
           .authorize(request, response, auth, handlerHelper.getLogical(),

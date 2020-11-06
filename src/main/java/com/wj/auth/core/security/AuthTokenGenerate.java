@@ -32,8 +32,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 /**
- * @author weijie
- * @since 2020/6/12
+ * @author 魏杰
+ * @since 0.0.1
  */
 @Component
 public class AuthTokenGenerate {

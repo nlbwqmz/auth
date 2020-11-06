@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 用于异常抛出，便于全局异常拦截
  *
- * @author weijie
- * @since 2020/10/14
+ * @author 魏杰
+ * @since 0.0.1
  */
 @ConditionalOnBean(SecurityRealm.class)
 @RestController

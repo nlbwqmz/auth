@@ -3,8 +3,8 @@ package com.wj.auth.common;
 /**
  * 默认过滤范围
  *
- * @author weijie
- * @since 2020/10/19
+ * @author 魏杰
+ * @since 0.0.1
  */
 public enum FilterRange {
   ALL, NONE

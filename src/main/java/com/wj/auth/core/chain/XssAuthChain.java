@@ -17,12 +17,12 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
- * @author weijie
- * @since 2020/10/16
+ * @author 魏杰
+ * @since 0.0.1
  */
 @Order(3)
 @Component
-public class XssChain implements Chain {
+public class XssAuthChain implements AuthChain {
 
   private final XssConfiguration xssConfiguration;
   private ImmutableSet<AuthHelper> xssIgnored;
@@ -30,7 +30,7 @@ public class XssChain implements Chain {
   @Value("${server.servlet.context-path:}")
   private String contextPath;
 
-  public XssChain(AuthAutoConfiguration authAutoConfiguration) {
+  public XssAuthChain(AuthAutoConfiguration authAutoConfiguration) {
     this.xssConfiguration = authAutoConfiguration.getXss();
   }
 

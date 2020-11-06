@@ -3,8 +3,8 @@ package com.wj.auth.core.rateLimiter;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author weijie
- * @since 2020/10/16
+ * @author 魏杰
+ * @since 0.0.1
  */
 @FunctionalInterface
 public interface RateLimiterCondition {
