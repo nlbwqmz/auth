@@ -26,9 +26,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author 魏杰
- * @since 0.0.1
+ * @since 0.0.2
  */
-@Order(1)
+@Order(2)
 @Component
 public class RateLimiterAuthChain implements AuthChain {
 
@@ -79,7 +79,7 @@ public class RateLimiterAuthChain implements AuthChain {
 
   @Override
   public void doFilter(ChainManager chain) {
-    if (rateLimiterConfiguration.isEnabled() && checkIsLimit()) {
+    if (checkIsLimit()) {
       switch (rateLimiterConfiguration.getStrategy()) {
         case NORMAL:
           normal();
@@ -96,6 +96,11 @@ public class RateLimiterAuthChain implements AuthChain {
       }
     }
     chain.doAuth();
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return rateLimiterConfiguration.isEnabled();
   }
 
   private boolean checkIsLimit() {

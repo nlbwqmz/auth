@@ -1,9 +1,9 @@
 package com.wj.auth.configuration;
 
 import com.wj.auth.configuration.RateLimiterConfiguration.Strategy;
+import com.wj.auth.core.AuthRealm;
 import com.wj.auth.core.AuthRun;
 import com.wj.auth.core.rateLimiter.RateLimiterCondition;
-import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.exception.rate.RateLimiterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +26,12 @@ import org.springframework.context.annotation.Import;
 public class AuthAutoConfiguration implements InitializingBean {
 
   public final static String AUTH_PREFIX = "auth";
-  public final static String ERROR_ATTRIBUTE = "authError";
   private static Logger log = LoggerFactory.getLogger(AuthAutoConfiguration.class);
 
+  /**
+   * 是否跳过Option方法
+   */
+  private boolean skipOptionsMethod = true;
   /**
    * 授权认证配置
    */
@@ -53,18 +56,24 @@ public class AuthAutoConfiguration implements InitializingBean {
   private RateLimiterConfiguration rateLimiter = new RateLimiterConfiguration();
 
   private final RateLimiterCondition rateLimiterCondition;
+  private final AuthRealm authRealm;
 
-  public AuthAutoConfiguration(@Autowired(required = false) SecurityRealm securityRealm,
+  public AuthAutoConfiguration(@Autowired(required = false) AuthRealm authRealm,
       @Autowired(required = false) RateLimiterCondition rateLimiterCondition) {
-    if (securityRealm == null && log.isWarnEnabled()) {
-      log.warn("auth cannot be turned on, because SecurityRealm is required.");
-    }
+    this.authRealm = authRealm;
     this.rateLimiterCondition = rateLimiterCondition;
   }
 
   @Override
   public void afterPropertiesSet() throws Exception {
+    checkAuthRealm();
     checkRateLimiterConfiguration();
+  }
+
+  private void checkAuthRealm() {
+    if (authRealm == null && log.isWarnEnabled()) {
+      log.warn("auth cannot be turned on, because AuthRealm is required.");
+    }
   }
 
   private void checkRateLimiterConfiguration() {
@@ -80,6 +89,14 @@ public class AuthAutoConfiguration implements InitializingBean {
     }
   }
 
+  public boolean isSkipOptionsMethod() {
+    return skipOptionsMethod;
+  }
+
+  public void setSkipOptionsMethod(boolean skipOptionsMethod) {
+    this.skipOptionsMethod = skipOptionsMethod;
+  }
+
   public SecurityConfiguration getSecurity() {
     return security;
   }
@@ -91,10 +108,6 @@ public class AuthAutoConfiguration implements InitializingBean {
 
   public static String getAuthPrefix() {
     return AUTH_PREFIX;
-  }
-
-  public static String getErrorAttribute() {
-    return ERROR_ATTRIBUTE;
   }
 
   public static Logger getLog() {

@@ -2,9 +2,8 @@ package com.wj.auth.core.chain;
 
 /**
  * @author 魏杰
- * @since 0.0.1
+ * @since 0.0.2
  */
-@FunctionalInterface
 public interface AuthChain {
 
   /**
@@ -13,5 +12,12 @@ public interface AuthChain {
    * @param chain 过滤链
    */
   void doFilter(ChainManager chain);
+
+  /**
+   * 是否启用
+   *
+   * @return
+   */
+  boolean isEnabled();
 
 }

@@ -8,16 +8,36 @@ import java.util.List;
  */
 public class ChainManager {
 
+  private boolean isOptionsAndSkipAndDone = false;
   private final List<AuthChain> authChains;
+  private final boolean isOptionsAndSkip;
   private int chainIndex = 0;
 
-  public ChainManager(List<AuthChain> authChains) {
+  public ChainManager(List<AuthChain> authChains, boolean isOptionsAndSkip) {
     this.authChains = authChains;
+    this.isOptionsAndSkip = isOptionsAndSkip;
   }
 
   public void doAuth() {
-    if (chainIndex < authChains.size()) {
-      authChains.get(chainIndex++).doFilter(this);
+    if (isOptionsAndSkip) {
+      if (!isOptionsAndSkipAndDone) {
+        CorsAuthChain corsAuthChain = null;
+        for (AuthChain item : authChains) {
+          if (item instanceof CorsAuthChain) {
+            corsAuthChain = (CorsAuthChain) item;
+            break;
+          }
+        }
+        if (corsAuthChain != null) {
+          isOptionsAndSkipAndDone = true;
+          corsAuthChain.doFilter(this);
+        }
+      }
+    } else {
+      if (chainIndex < authChains.size()) {
+        authChains.get(chainIndex++).doFilter(this);
+      }
     }
+
   }
 }

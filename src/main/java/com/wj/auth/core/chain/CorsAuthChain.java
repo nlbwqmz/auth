@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author 魏杰
- * @since 0.0.1
+ * @since 0.0.2
  */
-@Order(2)
+@Order(0)
 @Component
 public class CorsAuthChain implements AuthChain {
 
@@ -37,5 +37,10 @@ public class CorsAuthChain implements AuthChain {
     response.setHeader(HttpHeaders.ACCESS_CONTROL_MAX_AGE,
         corsConfiguration.getAccessControlMaxAge().toString());
     chain.doAuth();
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return corsConfiguration.isEnabled();
   }
 }

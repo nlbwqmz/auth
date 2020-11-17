@@ -5,8 +5,8 @@ import com.wj.auth.common.SubjectManager;
 import com.wj.auth.configuration.AuthAutoConfiguration;
 import com.wj.auth.configuration.SecurityConfiguration;
 import com.wj.auth.core.AuthLogin;
+import com.wj.auth.core.AuthRealm;
 import com.wj.auth.core.security.AuthTokenGenerate;
-import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.core.security.configuration.AuthHandlerEntity;
 import com.wj.auth.core.security.configuration.Logical;
 import com.wj.auth.core.security.handler.AnonInterceptorHandler;
@@ -30,15 +30,15 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author 魏杰
- * @since 0.0.1
+ * @since 0.0.2
  */
-@Order(0)
+@Order(1)
 @Component
 public class SecurityAuthChain implements AuthChain {
 
   private final SecurityConfiguration securityConfiguration;
   private final AuthTokenGenerate authTokenGenerate;
-  private final SecurityRealm securityRealm;
+  private final AuthRealm authRealm;
   private final AuthLogin authLogin;
   private List<AuthHandlerEntity> handlers = new ArrayList<>();
   @Value("${server.servlet.context-path:}")
@@ -46,11 +46,11 @@ public class SecurityAuthChain implements AuthChain {
 
   public SecurityAuthChain(AuthAutoConfiguration authAutoConfiguration,
       AuthTokenGenerate authTokenGenerate,
-      SecurityRealm securityRealm,
+      AuthRealm authRealm,
       AuthLogin authLogin) {
     this.securityConfiguration = authAutoConfiguration.getSecurity();
     this.authTokenGenerate = authTokenGenerate;
-    this.securityRealm = securityRealm;
+    this.authRealm = authRealm;
     this.authLogin = authLogin;
   }
 
@@ -74,13 +74,18 @@ public class SecurityAuthChain implements AuthChain {
       }
       if (handler.isAuthorize() && !handler
           .authorize(request, response, auth, handlerHelper.getLogical(),
-              securityRealm.doAuthorization())) {
+              authRealm.doAuthorization())) {
         throw new PermissionNotFoundException(
             String.format("%s permission required, logical is %s.", ArrayUtils.format(auth),
                 handlerHelper.getLogical().name()));
       }
     }
     chain.doAuth();
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return true;
   }
 
   private HandlerHelper getAuthHandler(HttpServletRequest request) {
@@ -103,7 +108,7 @@ public class SecurityAuthChain implements AuthChain {
   }
 
   public void setAuth(Set<AuthHelper> authSet) {
-    Set<AuthHelper> authHelperSet = securityRealm.addAuthPatterns();
+    Set<AuthHelper> authHelperSet = authRealm.addAuthPatterns();
     if (CollectionUtils.isNotBlank(authHelperSet)) {
       for (AuthHelper authHelper : authHelperSet) {
         Set<String> patterns = authHelper.getPatterns();
@@ -112,7 +117,7 @@ public class SecurityAuthChain implements AuthChain {
           authHelper.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
           authSet.add(authHelper);
         } else {
-          String clazz = securityRealm.getClass().toString();
+          String clazz = authRealm.getClass().toString();
           clazz = clazz.substring(6, clazz.indexOf("$$"));
           throw new AuthInitException(
               String
@@ -129,7 +134,7 @@ public class SecurityAuthChain implements AuthChain {
           .setPatterns(CollectionUtils.addUrlPrefix(securityConfiguration.getAnon(), contextPath))
           .build());
     }
-    Set<AuthHelper> anonAuthHelperSet = securityRealm.addAnonPatterns();
+    Set<AuthHelper> anonAuthHelperSet = authRealm.addAnonPatterns();
     if (CollectionUtils.isNotBlank(anonAuthHelperSet)) {
       for (AuthHelper authHelper : anonAuthHelperSet) {
         if (authHelper != null) {
@@ -138,7 +143,7 @@ public class SecurityAuthChain implements AuthChain {
             authHelper.setPatterns(CollectionUtils.addUrlPrefix(patterns, contextPath));
             anonSet.add(authHelper);
           } else {
-            String clazz = securityRealm.getClass().toString();
+            String clazz = authRealm.getClass().toString();
             clazz = clazz.substring(6, clazz.indexOf("$$"));
             throw new AuthInitException(
                 String.format("at %s.addAnonPatterns, patterns can't be blank.", clazz));
@@ -154,7 +159,7 @@ public class SecurityAuthChain implements AuthChain {
   }
 
   public void setCustomHandler() {
-    Set<AuthHandlerEntity> customHandler = securityRealm.addCustomHandler();
+    Set<AuthHandlerEntity> customHandler = authRealm.addCustomHandler();
     if (CollectionUtils.isNotBlank(customHandler)) {
       for (AuthHandlerEntity authHandlerEntity : customHandler) {
         addHandler(authHandlerEntity);

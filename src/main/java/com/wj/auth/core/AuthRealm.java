@@ -1,14 +1,16 @@
-package com.wj.auth.core.security;
+package com.wj.auth.core;
 
 import com.wj.auth.common.AuthHelper;
 import com.wj.auth.core.security.configuration.AuthHandlerEntity;
 import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author 魏杰
- * @since 0.0.1
+ * @since 0.0.2
  */
-public interface SecurityRealm {
+public interface AuthRealm {
 
   /**
    * 用户授权
@@ -43,4 +45,13 @@ public interface SecurityRealm {
   default Set<AuthHandlerEntity> addCustomHandler() {
     return null;
   }
+
+  /**
+   * 异常处理器
+   *
+   * @param request
+   * @param response
+   * @param e
+   */
+  void handleException(HttpServletRequest request, HttpServletResponse response, Exception e);
 }

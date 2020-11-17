@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author 魏杰
- * @since 0.0.1
+ * @since 0.0.2
  */
 @Order(3)
 @Component
@@ -58,6 +58,11 @@ public class XssAuthChain implements AuthChain {
           xssConfiguration.isBodyEnable()));
     }
     chain.doAuth();
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return xssConfiguration.isBodyEnable() || xssConfiguration.isQueryEnable();
   }
 
   /**

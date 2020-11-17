@@ -73,19 +73,18 @@ public class XssRequestWrapper extends HttpServletRequestWrapper {
         new InputStreamReader(servletInputStream, Charset.forName("UTF-8")))) {
       String line = "";
       while ((line = reader.readLine()) != null) {
-        System.out.println(line);
         sb.append(line);
       }
     } catch (IOException e) {
       e.printStackTrace();
-      throw new XssException();
+      throw new XssException(e.getMessage());
     } finally {
       if (servletInputStream != null) {
         try {
           servletInputStream.close();
         } catch (IOException e) {
           e.printStackTrace();
-          throw new XssException();
+          throw new XssException(e.getMessage());
         }
       }
     }

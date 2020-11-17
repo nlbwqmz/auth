@@ -16,7 +16,6 @@ import com.wj.auth.configuration.XssConfiguration;
 import com.wj.auth.core.chain.RateLimiterAuthChain;
 import com.wj.auth.core.chain.SecurityAuthChain;
 import com.wj.auth.core.chain.XssAuthChain;
-import com.wj.auth.core.security.SecurityRealm;
 import com.wj.auth.exception.AuthInitException;
 import com.wj.auth.utils.ArrayUtils;
 import com.wj.auth.utils.CollectionUtils;
@@ -40,7 +39,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author 魏杰
  * @since 0.0.1
  */
-@ConditionalOnBean(SecurityRealm.class)
+@ConditionalOnBean(AuthRealm.class)
 @ServletComponentScan("com.wj.auth")
 @ComponentScan("com.wj.auth")
 public class AuthRun implements ApplicationRunner {
