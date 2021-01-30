@@ -31,7 +31,7 @@ public class AuthAutoConfiguration implements InitializingBean {
   /**
    * 是否跳过Option方法
    */
-  private boolean skipOptionsMethod = true;
+  private boolean skipOptionsMethod = false;
   /**
    * 授权认证配置
    */
@@ -58,7 +58,7 @@ public class AuthAutoConfiguration implements InitializingBean {
   private final RateLimiterCondition rateLimiterCondition;
   private final AuthRealm authRealm;
 
-  public AuthAutoConfiguration(@Autowired(required = false) AuthRealm authRealm,
+  public AuthAutoConfiguration(AuthRealm authRealm,
       @Autowired(required = false) RateLimiterCondition rateLimiterCondition) {
     this.authRealm = authRealm;
     this.rateLimiterCondition = rateLimiterCondition;
@@ -66,14 +66,7 @@ public class AuthAutoConfiguration implements InitializingBean {
 
   @Override
   public void afterPropertiesSet() throws Exception {
-    checkAuthRealm();
     checkRateLimiterConfiguration();
-  }
-
-  private void checkAuthRealm() {
-    if (authRealm == null && log.isWarnEnabled()) {
-      log.warn("auth cannot be turned on, because AuthRealm is required.");
-    }
   }
 
   private void checkRateLimiterConfiguration() {
