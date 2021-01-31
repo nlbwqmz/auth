@@ -13,7 +13,7 @@ public class SubjectManager {
 
   private static final ThreadLocal<HttpServletRequest> requestLocal = new ThreadLocal<>();
   private static final ThreadLocal<HttpServletResponse> responseLocal = new ThreadLocal<>();
-  private static final ThreadLocal<Object> subjectLocal = new ThreadLocal<>();
+  private static final ThreadLocal<String> subjectLocal = new ThreadLocal<>();
   private static final ThreadLocal<Long> expireLocal = new ThreadLocal<>();
 
   public static HttpServletRequest getRequest() {
@@ -32,11 +32,11 @@ public class SubjectManager {
     responseLocal.set(response);
   }
 
-  public static Object getSubject() {
+  public static String getSubject() {
     return subjectLocal.get();
   }
 
-  public static void setSubject(Object subject) {
+  public static void setSubject(String subject) {
     subjectLocal.set(subject);
   }
 

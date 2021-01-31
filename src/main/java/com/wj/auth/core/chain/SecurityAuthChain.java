@@ -68,13 +68,13 @@ public class SecurityAuthChain implements AuthChain {
         authTokenGenerate.decode(authenticate);
       }
       if (handler.isRefreshToken()) {
-        Object subject = SubjectManager.getSubject();
+        String subject = SubjectManager.getSubject();
         long expire = SubjectManager.getExpire();
         authLogin.doLogin(subject, expire);
       }
       if (handler.isAuthorize() && !handler
           .authorize(request, response, auth, handlerHelper.getLogical(),
-              authRealm.doAuthorization())) {
+              authRealm.doAuthorization(request, response, SubjectManager.getSubject()))) {
         throw new PermissionNotFoundException(
             String.format("%s permission required, logical is %s.", ArrayUtils.format(auth),
                 handlerHelper.getLogical().name()));

@@ -16,5 +16,5 @@ public interface RateLimiterCondition {
    * @param subject token载体
    * @return 限流条件
    */
-  String getCondition(HttpServletRequest request, Object subject);
+  String getCondition(HttpServletRequest request, String subject);
 }

@@ -17,7 +17,8 @@ public interface AuthRealm {
    *
    * @return 权限集合
    */
-  Set<String> doAuthorization();
+  Set<String> doAuthorization(HttpServletRequest request, HttpServletResponse response,
+      String subject);
 
   /**
    * 添加 免登录 Patterns

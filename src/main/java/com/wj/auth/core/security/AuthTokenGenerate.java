@@ -14,7 +14,6 @@ import com.wj.auth.core.security.configuration.AlgorithmEnum;
 import com.wj.auth.exception.TokenFactoryInitException;
 import com.wj.auth.exception.security.CertificateException;
 import com.wj.auth.exception.security.CertificateNotFoundException;
-import com.wj.auth.utils.JacksonUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -136,20 +135,20 @@ public class AuthTokenGenerate {
     algorithm = Algorithm.HMAC256(tokenConfiguration.getPassword());
   }
 
-  private JWTCreator.Builder builder(Object obj, long expire) {
+  private JWTCreator.Builder builder(String subject, long expire) {
     return JWT.create()
         .withIssuer(tokenConfiguration.getIssuer())
         .withIssuedAt(new Date())
-        .withClaim(CLAIM_SUBJECT, JacksonUtils.toJSONString(obj))
+        .withClaim(CLAIM_SUBJECT, subject)
         .withClaim(CLAIM_EXPIRE, expire);
   }
 
-  public String create(Object obj) {
-    return builder(obj, -1).sign(algorithm);
+  public String create(String subject) {
+    return builder(subject, -1).sign(algorithm);
   }
 
-  public String create(Object obj, long expire) {
-    Builder builder = builder(obj, expire);
+  public String create(String subject, long expire) {
+    Builder builder = builder(subject, expire);
     if (expire > 0) {
       return builder.withExpiresAt(new Date(System.currentTimeMillis() + expire))
           .sign(algorithm);
@@ -163,8 +162,7 @@ public class AuthTokenGenerate {
       throw new CertificateNotFoundException();
     }
     DecodedJWT verify = verify(token);
-    SubjectManager.setSubject(JacksonUtils
-        .toObject(verify.getClaim(CLAIM_SUBJECT).asString(), Object.class));
+    SubjectManager.setSubject(verify.getClaim(CLAIM_SUBJECT).asString());
     SubjectManager.setExpire(verify.getClaim(CLAIM_EXPIRE).asLong());
   }
 
